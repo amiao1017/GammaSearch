@@ -13,10 +13,10 @@
 
 # define variables to be loaded from config file
 
+from __future__ import division
 import sys, getopt, re, os, math
 import numpy as np
 from subprocess import call
-from __future__ import division
 
 
 def main(argv):
@@ -33,8 +33,8 @@ def main(argv):
 
 	
 	band = 0.1
-	tau = 200.0
-	m = 0.2
+	tau = 200.0*365*24*3600
+	mismatch = 0.2
 	lowestFreq=50.0
 	resConstant = 0.83
 	TwoFThreshold = 40
@@ -62,9 +62,9 @@ def main(argv):
 		elif opt in ("-o", "--outputDir"):
 			outputDir = arg
 		elif opt in ("-t", "--tau"):
-			tau = float(arg)
+			tau = float(arg)*365*24*3600
 		elif opt in ("-m", "--mismatch"):
-			m = float(arg)
+			mismatch = float(arg)
 		elif opt in ("-l", "--lowestFreq"):
 			lowestFreq = float(arg)
 		elif opt in ("--subFiles"):
@@ -94,10 +94,13 @@ def main(argv):
 	L1SFTlocation = configData[7]
 
 	freqRange = endFreq-startFreq
-	freqSteps = int(freqRange/band - 1)
+	freqSteps = int(freqRange/band)
 
 	dagName = "GS_"+str(sourceNumber)+"_"+str(startFreq)+".dag"
-	
+
+	if os.path.isfile(dagName):
+		os.remove(dagName)
+
 	if not(outputDir):
 		outputDir = "GS_"+str(sourceNumber)
 	if not(os.path.isdir(outputDir)):
@@ -111,7 +114,7 @@ def main(argv):
 	if not(os.path.isdir(dataDir)):
 		os.makedirs(dataDir)
 
-	for x in xrange(0,freqSteps):
+	for x in xrange(0,freqSteps+1):
 				
 		freq = startFreq + x*band
 		
@@ -152,11 +155,11 @@ def main(argv):
 		while (count > 0):
 			count = 0
 			for x in range(0,j):
-				t = 2*math.pi()/j*i
+				t = 2.0*math.pi/float(j)*float(x)
 				alpha_temp = Alpha + math.cos(Semiangle)*resolution*step*math.cos(t) - math.sin(Semiangle)*resolution*step*math.sin(t)
 				delta_temp = Delta + math.sin(Semiangle)*resolution*step*math.cos(t) + math.cos(Semiangle)*resolution*step*math.sin(t)
 
-				if isinErrorEllipse(Alpha, Delta, Semimajor, Semiminor, Semiangle, alpha_temp, delta_temp):
+				if isInErrorEllipse(Alpha, Delta, Semimajor, Semiminor, Semiangle, alpha_temp, delta_temp):
 					AlphaList.append(Alpha)
 					DeltaList.append(Delta)
 					count = count + 1
@@ -177,14 +180,14 @@ def main(argv):
 			f.write("queue 1\n")
 			
 		#write DAG
-
-		with open(dagName, "w") as f:
-			for x in range(0, len(AlphaList)-1):
+		with open(dagName, "a") as f:
+			for x in range(0, len(AlphaList)):
 				jobName = "GS_"+str(sourceNumber)+"_"+str(freq)+"_"+str(x)
 				f.write("JOB "+ jobName + " " + subFileName + "\n")
 				f.write("RETRY " + jobName + " 0\n")
-				f.write("VARS " + jobName + ' argList=" --Alpha=' + str(AlphaList[x]) + ' --Delta=' + str(DeltaList[x]) + ' --Freq=' + str(freq) + ' --f1dot=' + str(f1dot) + ' --f2dot=' + str(f2dot) + ' --f1dotBand=' + str(f1dotBand) + ' --f2dotBand=' + str(f2dotBand) + ' --DataFiles=' + dataLocation + '/*.sft --TwoFthreshold=' + str(TwoFThreshold) + ' --NumCandidatesToKeep=100 --gridType=8 --outputFstat=' + outputLocation + '/GammaSearch_' + str(freq) + '_' + str(x) + '.dat --outputLogfile=' + outputLocation + '/CFSlog.txt --refTime=' + str(startTime) + ' --minStartTime=' + str(startTime) + ' --maxEndTime=' + str(endTime) + ' --outputSingleFstats=TRUE --metricMismatch=' + str(m) + ' --dFreq=1e-6 --useResamp=TRUE"\n'
+				f.write("VARS " + jobName + ' argList=" --Alpha=' + str(AlphaList[x]) + ' --Delta=' + str(DeltaList[x]) + ' --Freq=' + str(freq) + ' --f1dot=' + str(f1dot) + ' --f2dot=' + str(f2dot) + ' --f1dotBand=' + str(f1dotBand) + ' --f2dotBand=' + str(f2dotBand) + ' --DataFiles=' + dataLocation + '/*.sft --TwoFthreshold=' + str(TwoFThreshold) + ' --NumCandidatesToKeep=100 --gridType=8 --outputFstat=' + outputLocation + '/GammaSearch_' + str(freq) + '_' + str(x) + '.dat --outputLogfile=' + outputLocation + '/CFSlog.txt --refTime=' + str(startTime) + ' --minStartTime=' + str(startTime) + ' --maxEndTime=' + str(endTime) + ' --outputSingleFstats=TRUE --metricMismatch=' + str(mismatch) + ' --dFreq=1e-6 --useResamp=TRUE"\n')
 				f.write("\n")
+
 	
 		
 
@@ -206,7 +209,7 @@ def isInErrorEllipse(Alpha0, Delta0, Semimajor, Semiminor, Semiangle, AlphaTest,
 
 	if (focalDistance_1 + focalDistance_2 < 2*a):
 		return 1
-	else
+	else:
 		return 0
 
 if __name__ == "__main__":
