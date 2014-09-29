@@ -94,7 +94,7 @@ def main(argv):
 	L1SFTlocation = configData[7]
 
 	freqRange = endFreq-startFreq
-	freqSteps = int(freqRange/band)
+	freqSteps = int(round(freqRange/band))
 
 	dagName = "GS_"+str(sourceNumber)+"_"+str(startFreq)+".dag"
 
@@ -114,7 +114,7 @@ def main(argv):
 	if not(os.path.isdir(dataDir)):
 		os.makedirs(dataDir)
 
-	for x in xrange(0,freqSteps+1):
+	for x in xrange(0,freqSteps):
 				
 		freq = startFreq + x*band
 		
@@ -185,7 +185,7 @@ def main(argv):
 				jobName = "GS_"+str(sourceNumber)+"_"+str(freq)+"_"+str(x)
 				f.write("JOB "+ jobName + " " + subFileName + "\n")
 				f.write("RETRY " + jobName + " 0\n")
-				f.write("VARS " + jobName + ' argList=" --Alpha=' + str(AlphaList[x]) + ' --Delta=' + str(DeltaList[x]) + ' --Freq=' + str(freq) + ' --f1dot=' + str(f1dot) + ' --f2dot=' + str(f2dot) + ' --f1dotBand=' + str(f1dotBand) + ' --f2dotBand=' + str(f2dotBand) + ' --DataFiles=' + dataLocation + '/*.sft --TwoFthreshold=' + str(TwoFThreshold) + ' --NumCandidatesToKeep=100 --gridType=8 --outputFstat=' + outputLocation + '/GammaSearch_' + str(freq) + '_' + str(x) + '.dat --outputLogfile=' + outputLocation + '/CFSlog.txt --refTime=' + str(startTime) + ' --minStartTime=' + str(startTime) + ' --maxEndTime=' + str(endTime) + ' --outputSingleFstats=TRUE --metricMismatch=' + str(mismatch) + ' --dFreq=1e-6 --useResamp=TRUE"\n')
+				f.write("VARS " + jobName + ' argList=" --Alpha=' + str(AlphaList[x]) + ' --Delta=' + str(DeltaList[x]) + ' --Freq=' + str(freq) + ' --f1dot=' + str(f1dot) + ' --f2dot=' + str(f2dot) + ' --f1dotBand=' + str(f1dotBand) + ' --f2dotBand=' + str(f2dotBand) + ' --DataFiles=' + dataLocation + '/*.sft --TwoFthreshold=' + str(TwoFThreshold) + ' --NumCandidatesToKeep=100 --gridType=8 --outputFstat=' + outputLocation + '/GammaSearch_' + str(freq) + '_' + str(x) + '.dat --outputFstatHist=' + outputLocation + '/GammaHist_' + str(freq) + '_' + str(x) + '.dat --outputLoudest=' + outputLocation + '/GammaLoud_' + str(freq) + '_' + str(x) + '.dat --outputLogfile=' + outputLocation + '/CFSlog.txt --refTime=' + str(startTime) + ' --minStartTime=' + str(startTime) + ' --maxEndTime=' + str(endTime) + ' --outputSingleFstats=TRUE --metricMismatch=' + str(mismatch) + ' --dFreq=1e-6 --useResamp=TRUE"\n')
 				f.write("\n")
 
 	
