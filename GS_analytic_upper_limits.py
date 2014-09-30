@@ -89,7 +89,6 @@ def main(argv):
 		ax.set_ylabel('h0 (95% upper limit)')
 		ax.set_title("Analytic Upper Limits for source " + sourceNumber, fontsize="large") 
 		plt.savefig('Analytic_UL_' + str(startFreq) + "_" + str(endFreq) + ".png")
-		plt.show()
 	
 
 if __name__ == "__main__":
