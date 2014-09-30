@@ -8,7 +8,7 @@ from pylab import *
  
 def main(argv):
 
-	usage = "GS_analytic_upper_limits -s <start frequency> -e <end frequency> [-p (plot flag) -f <file location> -b <freq band size> -o <output filename> -d <output directory>]"
+	usage = "GS_analytic_upper_limits -s <start frequency> -e <end frequency> [-n <source number> -p (plot flag) -f <file location> -b <freq band size> -o <output filename> -d <output directory>]"
 
 	#load inputs/options
 	
@@ -19,9 +19,10 @@ def main(argv):
 	outputDir = '.'
 	outFile = False
 	plotResults = False
+	sourceNumber = "880"
 
 	try:
-		opts, args = getopt.getopt(argv, "hps:e:f:b:o:d:", ["help", "plot", "startFreq=", "endFreq=", "files=", "band=", "outputFile=", "outputDir="])
+		opts, args = getopt.getopt(argv, "hps:e:f:b:o:d:n:", ["help", "plot", "startFreq=", "endFreq=", "files=", "band=", "outputFile=", "outputDir=", "sourceNumber="])
 	except getopt.GetoptError:
 		print usage
 		sys.exit(2)
@@ -44,6 +45,8 @@ def main(argv):
 			outputDir = arg
 		elif opt in ("-p", "--plot"):
 			plotResults = True
+		elif opt in ("-n", "--sourceNumber"):
+			sourceNumber = arg
 
 	if not(outFile):
 		outFile = "Analytic_UL_" + str(startFreq) + "_" + str(endFreq) + ".dat"
@@ -79,8 +82,13 @@ def main(argv):
 	
 
 	if plotResults:
-		plt.figure()
-		plt.plot(ULFreqs, ULims, 'ro')
+		fig = plt.figure(figsize=(8,6))
+		ax = fig.add_subplot(1,1,1)
+		ax.plot(ULFreqs, ULims, 'ro')
+		ax.set_xlabel('Frequency (Hz)')
+		ax.set_ylabel('h0 (95% upper limit)')
+		ax.set_title("Analytic Upper Limits for source " + sourceNumber, fontsize="large") 
+		plt.savefig('Analytic_UL_' + str(startFreq) + "_" + str(endFreq) + ".png")
 		plt.show()
 	
 
