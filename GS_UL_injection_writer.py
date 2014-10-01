@@ -10,13 +10,13 @@ def main(argv):
 
 # four sets of 250 injections made: strength 0.9h, 0.95h, 1.05h, 1.10h.
 
-	usage = "GS_UL_injection_writer -c <config file> -r <record file> [--makeSFTs]"
+	usage = "GS_UL_injection_writer -c <config file> -r <record file> -s <start frequency> -e <end frequency> [--makeSFTs]"
 
 	nInjections = 1
 	makeSFTs = False
 
 	try:
-		opts, args = getopt.getopt(argv, "hc:r:", ["help", "configFile=","--recordFile=","makeSFTs"])
+		opts, args = getopt.getopt(argv, "hc:r:s:e:", ["help", "configFile=","--recordFile=","--startFreq=", "--endFreq=","makeSFTs"])
 	except getopt.GetoptError:
 		print usage
 		sys.exit(2)
@@ -29,6 +29,10 @@ def main(argv):
 			configfile = arg
 		elif opt in ("-r", "--recordFile"):
 			recordfile = arg
+		elif opt in ("-s", "--startFreq"):
+			startFreq = float(arg)
+		elif opt in ("-e", "--endFreq"):
+			endFreq = float(arg)
 		elif opt in ("--makeSFTs"):
 			makeSFTs = True
 
@@ -38,7 +42,7 @@ def main(argv):
 		sys.stderr.write("Invalid record file " + recordfile)
 		sys.exit(1)
 	
-	searchdata = np.loadtxt(recordfile, skiprows=1)
+	search_record = np.loadtxt(recordfile, skiprows=1)
 
 	try:
 		config = ConfigParser.ConfigParser()
@@ -53,8 +57,13 @@ def main(argv):
 
 	#load inputs/options
 
+	Vars['FMin'] = startFreq
+ 
 	Vars['SearchBand'] = 1
-	Vars['Fband'] = 0.1
+	Vars['FBand'] = 0.1
+
+	
+	#these will definitely go into a config file
 	Vars['Tau'] = 200
 	Vars['m'] = 0.2
 	Vars['EphemPath'] = "IAmAnEphemPath"
@@ -71,23 +80,7 @@ def main(argv):
 	Vars["CFSOutput"] = "IAmTheCFSOutput"
 	Vars["CFSHist"] = "IAmCFSHist"
 	Vars["CFSTopList"] = "IAmGroot"
-
 	
-
-	#Upper Limit Band FBand
-	try:
-		Vars['FMin'] = float(config.get("InjVars","ULFMin"))
-	except:
-		sys.stderr.write("Cannot read FMin\n")
-		sys.exit(1)
-
-	#Upper Limit Band Band
-	try: 
-		Vars['FBand'] = float(config.get("InjVars","ULFBand"))
-	except:
-		sys.stderr.write("Cannot read FBand\n")
-		sys.exit(1)
-
 		
 	# will have to have some sort of output file/directory handling here. placeholders for the moment though!
 
@@ -118,6 +111,7 @@ def main(argv):
 
 						#generate random frequency parameters
 						Freq = Vars['FMin'] + Vars['SearchBand']*random.uniform(0,1)
+						
 						Vars['FDotMin'] = -Freq/TauSecs
 						Vars['FDotMax'] = -Freq/(6.0*TauSecs)
 						FDot = Vars['FDotMin'] + (Vars['FDotMax']-Vars['FDotMin'])*random.uniform(0,1)
