@@ -3,20 +3,57 @@
 # GS_UL_injection_writer - writes injections/searches for verifying analytic upper limits!
 
 from __future__ import division
-import sys, getopt, re, os, math, random, subprocess, array
+import sys, getopt, re, os, math, random, subprocess, array, ConfigParser
+import numpy as np
 
 def main(argv):
 
 # four sets of 250 injections made: strength 0.9h, 0.95h, 1.05h, 1.10h.
 
-	usage = "GS_UL_injection_writer -s <start frequency> -u <analytic upper limit> -a <Alpha> -d <Delta> [-b <frequency band> --makeSFTs]"
+	usage = "GS_UL_injection_writer -c <config file> -r <record file> [--makeSFTs]"
 
-	#establish var dictionary
+	nInjections = 1
+	makeSFTs = False
+
+	try:
+		opts, args = getopt.getopt(argv, "hc:r:", ["help", "configFile=","--recordFile=","makeSFTs"])
+	except getopt.GetoptError:
+		print usage
+		sys.exit(2)
 	
+	for opt, arg in opts:
+		if opt in ("-h", "--help"):
+			print usage
+			sys.exit()
+		elif opt in ("-c", "--configFile"):
+			configfile = arg
+		elif opt in ("-r", "--recordFile"):
+			recordfile = arg
+		elif opt in ("--makeSFTs"):
+			makeSFTs = True
+
+	try:
+		recordfile
+	except:
+		sys.stderr.write("Invalid record file " + recordfile)
+		sys.exit(1)
+	
+	searchdata = np.loadtxt(recordfile, skiprows=1)
+
+	try:
+		config = ConfigParser.ConfigParser()
+		config.read(configfile)
+	except:
+		sys.stderr.write("Cannot import Config file " + configfile + " exiting...\n")
+		sys.exit(1)
+
+	#Variables structure/dictionary
+
 	Vars = {}
 
 	#load inputs/options
 
+	Vars['SearchBand'] = 1
 	Vars['Fband'] = 0.1
 	Vars['Tau'] = 200
 	Vars['m'] = 0.2
@@ -35,31 +72,22 @@ def main(argv):
 	Vars["CFSHist"] = "IAmCFSHist"
 	Vars["CFSTopList"] = "IAmGroot"
 
-	nInjections = 1
-	makeSFTs = False
-
-	try:
-		opts, args = getopt.getopt(argv, "hs:u:b:a:d:", ["help", "startFreq=", "upperLimit=", "band=", "Alpha=","Delta=","makeSFTs"])
-	except getopt.GetoptError:
-		print usage
-		sys.exit(2)
 	
-	for opt, arg in opts:
-		if opt in ("-h", "--help"):
-			print usage
-			sys.exit()
-		elif opt in ("-s", "--startFreq"):
-			Vars['startFreq'] = float(arg)
-		elif opt in ("-u", "--upperLimit"):
-			Vars['h0'] = float(arg)
-		elif opt in ("-b", "--band"):
-			Vars['Fband'] = float(arg)
-		elif opt in ("-d", "--Delta"):
-			Vars['Delta'] = float(arg)
-		elif opt in ("-a", "--Alpha"):
-			Vars['Alpha'] = float(arg)
-		elif opt in ("--makeSFTs"):
-			makeSFTs = True
+
+	#Upper Limit Band FBand
+	try:
+		Vars['FMin'] = float(config.get("InjVars","ULFMin"))
+	except:
+		sys.stderr.write("Cannot read FMin\n")
+		sys.exit(1)
+
+	#Upper Limit Band Band
+	try: 
+		Vars['FBand'] = float(config.get("InjVars","ULFBand"))
+	except:
+		sys.stderr.write("Cannot read FBand\n")
+		sys.exit(1)
+
 		
 	# will have to have some sort of output file/directory handling here. placeholders for the moment though!
 
@@ -89,7 +117,7 @@ def main(argv):
 						Vars['Phi0'] = random.uniform(0,2*math.pi)
 
 						#generate random frequency parameters
-						Freq = Vars['startFreq'] + Vars['Fband']*random.uniform(0,1)
+						Freq = Vars['FMin'] + Vars['SearchBand']*random.uniform(0,1)
 						Vars['FDotMin'] = -Freq/TauSecs
 						Vars['FDotMax'] = -Freq/(6.0*TauSecs)
 						FDot = Vars['FDotMin'] + (Vars['FDotMax']-Vars['FDotMin'])*random.uniform(0,1)
@@ -118,8 +146,8 @@ def main(argv):
 
 						if (makeSFTs):
     							#Create small-band (UL band) noise SFTs
-    							Vars['BandFMin'] = Vars['FMin'] - Vars['FBand']
-   							Vars['BandFMax'] = Vars['FMin'] + 3*Vars['FBand']
+    							Vars['BandFMin'] = Vars['FMin'] - Vars['SearchBand']
+   							Vars['BandFMax'] = Vars['FMin'] + 3*Vars['SearchBand']
     							BandingCmdH1 = 'lalapps_ConvertToSFTv2 --inputSFTs=' + str(Vars['H1InputData']) + ' --outputDir=' + str(Vars['H1MFDInput']) + ' --fmin=' + str(Vars['BandFMin']) + ' --fmax=' + str(Vars['BandFMax'])
     							BandingCmdL1 = 'lalapps_ConvertToSFTv2 --inputSFTs=' + str(Vars['L1InputData']) + ' --outputDir=' + str(Vars['L1MFDInput']) + ' --fmin=' + str(Vars['BandFMin']) + ' --fmax=' + str(Vars['BandFMax']) 
    							print 'Creating small-band SFTs...'
