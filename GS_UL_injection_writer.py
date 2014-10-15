@@ -16,7 +16,7 @@ def main(argv):
 	makeSFTs = False
 
 	try:
-		opts, args = getopt.getopt(argv, "hc:r:s:e:", ["help", "configFile=","--recordFile=","--startFreq=", "--endFreq=","makeSFTs"])
+		opts, args = getopt.getopt(argv, "hc:r:s:e:", ["help", "configFile=","recordFile=","startFreq=", "endFreq=","makeSFTs"])
 	except getopt.GetoptError:
 		print usage
 		sys.exit(2)
@@ -63,25 +63,107 @@ def main(argv):
 	Vars['FBand'] = 0.1
 
 	
-	#these will definitely go into a config file
-	Vars['Tau'] = 200
-	Vars['m'] = 0.2
-	Vars['EphemPath'] = "IAmAnEphemPath"
-	Vars['EphemYrs'] = "IAmTheEphemYears"
-	Vars['tStartGPS'] = "IAmAStartTime"
-	Vars['MFDLogFile'] = "IAmAMFDLogFile"
-	Vars['H1MFDInput'] = "IAmH1MFDInput"
-	Vars['L1MFDInput'] = "IAmL1MFDInput"
-	Vars['CFSInput'] = "IAmTheCFSInput"
-	Vars['tObs'] = 5*24*3600
-	Vars['EphemEarth'] = "IAmTheEphemEarth"
-	Vars['EphemSun'] = "IAmTheEphemSun"
-	Vars['2FThresh'] = "IAmThe2FThresh"
-	Vars["CFSOutput"] = "IAmTheCFSOutput"
-	Vars["CFSHist"] = "IAmCFSHist"
-	Vars["CFSTopList"] = "IAmGroot"
+	#Numerical search properties
 	
-		
+	try: 
+		Vars['Tau'] = float(config.get("InjVars","Age"))
+	except:
+		sys.stderr.write("Cannot read Tau\n")
+		sys.exit(1)
+
+	try:
+		Vars['m'] = float(config.get("InjVars","Mismatch"))
+	except:
+		sys.stderr.write("Cannot read m\n")
+		sys.exit(1)
+
+	try:
+		Vars['tStartGPS'] = float(config.get("InjVars","StartTime"))
+	except:
+		sys.stderr.write("Cannot read tStartGPS\n")
+		sys.exit(1)
+
+	try:
+		Vars['tObs'] = float(config.get("InjVars","TObs"))
+	except:
+		sys.stderr.write("Cannot read tObs\n")
+		sys.exit(1)
+
+	try:
+		Vars['2FThresh'] = float(config.get("InjVars","2F"))
+	except:
+		sys.stderr.write("Cannot read 2FThresh\n")
+		sys.exit(1)
+	
+	# Ephemeris properties
+
+	try:
+		Vars['EphemPath'] = config.get("InjVars","EphemPath")
+	except:
+		sys.stderr.write("Cannot read EphemPath\n")
+		sys.exit(1)
+
+	try:
+		Vars['EphemYrs'] = config.get("InjVars","EphemYears")
+	except:
+		sys.stderr.write("Cannot read EphemYrs\n")
+		sys.exit(1)
+
+	try:
+		Vars['EphemEarth'] = config.get("InjVars","EphemEarth")
+	except:
+		sys.stderr.write("Cannot read EphemEarth\n")
+		sys.exit(1)
+
+	try:
+		Vars['EphemSun'] = config.get("InjVars","EphemSun")
+	except:
+		sys.stderr.write("Cannot read EphemSun\n")
+		sys.exit(1)
+
+	# Output properties
+
+	try:		
+		Vars['MFDLogFile'] = config.get("InjVars","MFDLog")
+	except:
+		sys.stderr.write("Cannot read MFDLogFile\n")
+		sys.exit(1)
+
+	try:
+		Vars['H1MFDInput'] = config.get("InjVars","H1MFDInput")
+	except:
+		sys.stderr.write("Cannot read H1MFDInput\n")
+		sys.exit(1)
+	try:
+		Vars['L1MFDInput'] = config.get("InjVars","L1MFDInput")
+	except:
+		sys.stderr.write("Cannot read L1MFDInput\n")
+		sys.exit(1)
+
+	try:
+		Vars['CFSInput'] = config.get("InjVars","CFSInput")
+	except:
+		sys.stderr.write("Cannot read CFSInput\n")
+		sys.exit(1)
+
+	try:
+		Vars['CFSOutput'] = config.get("InjVars","CFSOutput")
+	except:
+		sys.stderr.write("Cannot read CFSOutput\n")
+		sys.exit(1)
+	
+	try:
+		Vars['CFSHist'] = config.get("InjVars","CFSHist")
+	except:
+		sys.stderr.write("Cannot read CFSHist\n")
+		sys.exit(1)	
+	
+	try:
+		Vars['CFSTopList'] = config.get("InjVars","CFSTopList")
+	except:
+		sys.stderr.write("Cannot read CFSTopList\n")
+		sys.exit(1)
+			
 	# will have to have some sort of output file/directory handling here. placeholders for the moment though!
 
 	injectionDag = "IAmAnInjectionDag.dag"
