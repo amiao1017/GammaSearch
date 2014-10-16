@@ -10,13 +10,13 @@ def main(argv):
 
 # four sets of 250 injections made: strength 0.9h, 0.95h, 1.05h, 1.10h.
 
-	usage = "GS_UL_injection_writer -c <config file> -r <record file> -s <start frequency> -e <end frequency>"
+	usage = "GS_UL_injection_writer -c <config file> -r <record file> -s <start frequency> -e <end frequency> [--subFiles <sub file location>]"
 
 	nInjections = 2
 	outputDir = False
 
 	try:
-		opts, args = getopt.getopt(argv, "hc:r:s:e:", ["help", "configFile=","recordFile=", "startFreq=", "endFreq="])
+		opts, args = getopt.getopt(argv, "hc:r:s:e:", ["help", "configFile=","recordFile=", "startFreq=", "endFreq=", "subFiles="])
 	except getopt.GetoptError:
 		print usage
 		sys.exit(2)
@@ -33,8 +33,8 @@ def main(argv):
 			startFreq = float(arg)
 		elif opt in ("-e", "--endFreq"):
 			endFreq = float(arg)
-		elif opt in ("--makeSFTs"):
-			makeSFTs = True
+		elif opt in ("--subFiles"):
+			subFileLocation = arg
 
 	try:
 		recordfile
@@ -151,6 +151,29 @@ def main(argv):
 		os.makedirs(outputLocation)
 	if not(os.path.isdir(MFDInputs)):
 		os.makedirs(MFDInputs)
+
+        CFSsubFileName = subFileLocation+"/GS_UL_Injection_CFS_"+str(sourceNumber)+"_"+str(startFreq)+".sub"
+        MFDsubFileName = subFileLocation+"/GS_UL_Injection_MFD_"+str(sourceNumber)+"_"+str(startFreq)+".sub"
+
+	with open(CFSsubFileName,"w") as f:
+		f.write("universe=vanilla\n")
+		f.write("executable = /usr/bin/lalapps_ComputeFStatistic_v2\n")
+		f.write("arguments = $(argList)\n")
+		f.write("log = "+outputLocation+"/GS_log.txt\n")
+		f.write("error = " + outputLocation+"/GS_error.txt\n")
+		f.write("output = " + outputLocation+"/GS_output.txt\n")
+		f.write("notification = never\n")
+		f.write("queue 1\n")
+
+	with open(MFDsubFileName,"w") as f:
+		f.write("universe=vanilla\n")
+		f.write("executable = /usr/bin/lalapps_Makefakedata_v4\n")
+		f.write("arguments = $(argList)\n")
+		f.write("log = "+outputLocation+"/GS_MFD_log.txt\n")
+		f.write("error = " + outputLocation+"/GS_MFD_error.txt\n")
+		f.write("output = " + outputLocation+"/GS_MFD_output.txt\n")
+		f.write("notification = never\n")
+		f.write("queue 1\n")
 
 
 	freqRange = endFreq-startFreq
@@ -272,12 +295,20 @@ def main(argv):
 						Vars['MFDFmin'] = SearchBox[0] - Vars['Padding']
 						Vars['MFDFBand'] = SearchBand[0] + 2*Vars['Padding']
 						Vars['MFDLogFile'] = str(Vars['CFSInput']) + "/MFD_log.txt"
-						
-						MFDCmdH1 = 'lalapps_Makefakedata_v4 --outSFTbname=' + str(Vars['CFSInput']) + ' --IFO=H1 --ephemDir=' + str(Vars['EphemPath']) + ' --ephemYear=' + str(Vars['EphemYrs']) + ' --fmin=' + str(Vars['MFDFmin']) + ' --Band=' + str(Vars['MFDFBand']) + ' --refTime=' + str(Vars['tStartGPS']) + ' --RA=' + str(Vars['Alpha']) + ' --Dec=' + str(Vars['Delta']) + ' --h0=' + str(Vars['h0Test']) + ' --cosi=' + str(Vars['CosIota']) + ' --psi=' + str(Vars['Psi']) + ' --phi0=' + str(Vars['Phi0']) + ' --Freq=' + str(FreqVars[0]) + ' --f1dot=' + str(FreqVars[1]) + ' --f2dot=' + str(FreqVars[2]) + ' --logfile=' + str(Vars['MFDLogFile']) + ' --noiseSFTs="' + dataLocation + '/H1/*.sft"'
 
-   						MFDCmdL1 = 'lalapps_Makefakedata_v4 --outSFTbname=' + str(Vars['CFSInput']) + ' --IFO=L1 --ephemDir=' + str(Vars['EphemPath']) + ' --ephemYear=' + str(Vars['EphemYrs']) + ' --fmin=' + str(Vars['MFDFmin']) + ' --Band=' + str(Vars['MFDFBand']) + ' --refTime=' + str(Vars['tStartGPS']) + ' --RA=' + str(Vars['Alpha']) + ' --Dec=' + str(Vars['Delta']) + ' --h0=' + str(Vars['h0Test']) + ' --cosi=' + str(Vars['CosIota']) + ' --psi=' + str(Vars['Psi']) + ' --phi0=' + str(Vars['Phi0']) + ' --Freq=' + str(FreqVars[0]) + ' --f1dot=' + str(FreqVars[1]) + ' --f2dot=' + str(FreqVars[2]) + ' --noiseSFTs="' + dataLocation + '/L1/*.sft"'
+						jobName = "GS_UL_Injection_"+str(strainfactor)+ "_" + str(i)
 						
-						MFD.write(MFDCmdH1 + "\n\n" + MFDCmdL1 + "\n\n")
+						MFDCmdH1 = 'VARS ' + jobName + '_H1 argList= "--outSFTbname=' + str(Vars['CFSInput']) + ' --IFO=H1 --ephemDir=' + str(Vars['EphemPath']) + ' --ephemYear=' + str(Vars['EphemYrs']) + ' --fmin=' + str(Vars['MFDFmin']) + ' --Band=' + str(Vars['MFDFBand']) + ' --refTime=' + str(Vars['tStartGPS']) + ' --RA=' + str(Vars['Alpha']) + ' --Dec=' + str(Vars['Delta']) + ' --h0=' + str(Vars['h0Test']) + ' --cosi=' + str(Vars['CosIota']) + ' --psi=' + str(Vars['Psi']) + ' --phi0=' + str(Vars['Phi0']) + ' --Freq=' + str(FreqVars[0]) + ' --f1dot=' + str(FreqVars[1]) + ' --f2dot=' + str(FreqVars[2]) + ' --logfile=' + str(Vars['MFDLogFile']) + ' --noiseSFTs=' + dataLocation + '/H1/*.sft"'
+
+   						MFDCmdL1 = 'VARS ' + jobName + '_L1 argList= "--outSFTbname=' + str(Vars['CFSInput']) + ' --IFO=L1 --ephemDir=' + str(Vars['EphemPath']) + ' --ephemYear=' + str(Vars['EphemYrs']) + ' --fmin=' + str(Vars['MFDFmin']) + ' --Band=' + str(Vars['MFDFBand']) + ' --refTime=' + str(Vars['tStartGPS']) + ' --RA=' + str(Vars['Alpha']) + ' --Dec=' + str(Vars['Delta']) + ' --h0=' + str(Vars['h0Test']) + ' --cosi=' + str(Vars['CosIota']) + ' --psi=' + str(Vars['Psi']) + ' --phi0=' + str(Vars['Phi0']) + ' --Freq=' + str(FreqVars[0]) + ' --f1dot=' + str(FreqVars[1]) + ' --f2dot=' + str(FreqVars[2]) + ' --noiseSFTs=' + dataLocation + '/L1/*.sft"'
+						
+										
+						MFD.write('JOB ' + jobName + '_H1 ' + MFDsubFileName + '\n')
+						MFD.write('RETRY ' + jobName + '_H1 0\n')
+						MFD.write(MFDCmdH1 + "\n\n")
+						MFD.write('JOB ' + jobName + '_L1 ' + MFDsubFileName + '\n')
+						MFD.write('RETRY ' + jobName + '_L1 0\n')
+						MFD.write(MFDCmdL1 + "\n\n")
 						
 						#generates CFS and writes out to CFS dag
 
@@ -285,8 +316,13 @@ def main(argv):
 						Vars['CFSHist'] = strain_output + "/CFS_Hist_Test_"+str(i)+".dat"
 						Vars['CFSTopList'] = strain_output+"/CFS_Max_Test_"+str(i)+".dat"
 
-						CFSv2Cmd = 'lalapps_ComputeFStatistic_v2 --RA=' + str(Vars['Alpha']) + ' --Dec=' + str(Vars['Delta']) + ' --Freq=' + str(SearchBox[0]) + ' --f1dot=' + str(SearchBox[1]) + ' --f2dot=' + str(SearchBox[2]) + ' --FreqBand=' + str(SearchBand[0]) + ' --f1dotBand=' + str(SearchBand[1]) + ' --f2dotBand=' + str(SearchBand[2]) + ' --DataFiles="' + str(Vars['CFSInput']) + '/*.sft" --ephemEarth=' + str(Vars['EphemEarth']) + ' --ephemSun=' + str(Vars['EphemSun']) + ' --TwoFthreshold=' + str(Vars['2FThresh']) + ' --outputFstat=' + str(Vars['CFSOutput']) + ' --outputFstatHist=' + str(Vars['CFSHist']) + ' --metricMismatch=' + str(Vars['m']) + ' --gridType=8 --refTime=' + str(Vars['tStartGPS']) + ' --outputSingleFstats=TRUE --outputLoudest=' + str(Vars['CFSTopList']) + ' --useResamp=TRUE'
+						
 
+						CFSv2Cmd = 'VARS ' + jobName + ' arglist=" --RA=' + str(Vars['Alpha']) + ' --Dec=' + str(Vars['Delta']) + ' --Freq=' + str(SearchBox[0]) + ' --f1dot=' + str(SearchBox[1]) + ' --f2dot=' + str(SearchBox[2]) + ' --FreqBand=' + str(SearchBand[0]) + ' --f1dotBand=' + str(SearchBand[1]) + ' --f2dotBand=' + str(SearchBand[2]) + ' --DataFiles="' + str(Vars['CFSInput']) + '/*.sft" --ephemEarth=' + str(Vars['EphemEarth']) + ' --ephemSun=' + str(Vars['EphemSun']) + ' --TwoFthreshold=' + str(Vars['2FThresh']) + ' --outputFstat=' + str(Vars['CFSOutput']) + ' --outputFstatHist=' + str(Vars['CFSHist']) + ' --metricMismatch=' + str(Vars['m']) + ' --gridType=8 --refTime=' + str(Vars['tStartGPS']) + ' --outputSingleFstats=TRUE --outputLoudest=' + str(Vars['CFSTopList']) + ' --useResamp=TRUE"'
+
+
+						CFS.write('JOB ' + jobName + ' ' + CFSsubFileName + '\n')
+						CFS.write('RETRY ' + jobName + ' 0\n')
 						CFS.write(CFSv2Cmd + "\n\n")
 
 						#StrainFactor Injection Frequency FrequencyBin SearchPos Alpha Delta	
