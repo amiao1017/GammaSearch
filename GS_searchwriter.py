@@ -186,7 +186,7 @@ def main(argv):
 	freqRange = endFreq-startFreq
 	freqSteps = int(round(freqRange/band))
 
-	dagName = "GS_"+str(Vars['sourceNumber'])+"_"+str(startFreq)+".dag"
+	dagName = "GS_"+str(Vars['sourceNumber'])+"_"+str(startFreq)+"_"+ str(endFreq)".dag"
 
 	if os.path.isfile(dagName):
 		os.remove(dagName)
