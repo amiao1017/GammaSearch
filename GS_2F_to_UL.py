@@ -3,25 +3,24 @@
 #GS_2F_to_UL - collects ComputeFStatistic_v2 outputs and sets up dags to run analytical upper limits. 
 
 from __future__ import division
-import sys, getopt, re, os, math
+import sys, getopt, re, os, math, ConfigParser
 
 def main(argv):
 
-	usage = "GS_2F_to_UL -s <start frequency> -e <end frequency> -n <source number> -f <file location> [-b <freq band size> -o <output filename> -d <output directory>]"
+	usage = "GS_2F_to_UL -s <start frequency> -e <end frequency> -c <config file> -f <file location> [-o <output filename> -d <output directory>]"
 
 	#load inputs/options
 
 	startFreq = ''
 	endFreq = ''
 	fileLocation = '.'
-	band = 0.1
 	outputDir = '.'
 	outFile = False
 	
 	loudest2F = []
 
 	try:
-		opts, args = getopt.getopt(argv, "hs:e:n:f:b:o:d:", ["help", "startFreq=", "endFreq=", "sourceNumber=", "files=", "band=", "outFile=", "outputDir="])
+		opts, args = getopt.getopt(argv, "hs:e:c:f:o:d:", ["help", "startFreq=", "endFreq=", "configFile=", "files=", "outFile=", "outputDir="])
 	except getopt.GetoptError:
 		print usage
 		sys.exit(2)
@@ -34,16 +33,49 @@ def main(argv):
 			startFreq = float(arg)
 		elif opt in ("-e", "--endFreq"):
 			endFreq = float(arg)
-		elif opt in ("-n", "--sourceNumber"):
-			sourceNumber = int(arg)
+		elif opt in ("-c", "--configFile"):
+			configFile = arg
 		elif opt in ("-f", "--files"):
 			fileLocation = arg
-		elif opt in ("-b", "--band"):
-			band = float(arg)
 		elif opt in ("-o", "--outFile"):
 			outFile = arg
 		elif opt in ("-d", "--outputDir"):
 			outputDir = arg
+
+	Vars = {}
+
+	try:
+		config = ConfigParser.ConfigParser()
+		config.read(configFile)
+	except:
+		sys.stderr.write("Cannot import Config File " + configFile + " exiting... \n")
+		sys.exit(2)
+
+	try:
+		Vars['Band'] = config.get("InjVars","band")
+		band = Vars['Band']
+	except:
+		sys.stderr.write("Cannot read band\n")
+		sys.exit(1)
+
+	try:
+		Vars['sourceNumber'] = int(config.get("InjVars","Source")
+		sourceNumber = Vars['sourceNumber']
+	except:
+		sys.stderr.write("Cannot read sourceNumber\n")
+		sys.exit(1)
+
+	try:
+		Vars['EphemPath'] = config.get("InjVars","EphemPath")
+	except:
+		sys.stderr.write("Cannot read EphemPath\n")
+		sys.exit(1)
+
+	try:
+		Vars['EphemYrs'] = config.get("InjVars","EphemYears")
+	except:
+		sys.stderr.write("Cannot read EphemYrs\n")
+		sys.exit(1)
 
 	if not(outFile):
 		outFile = "GS_UL_" + str(startFreq) + "_" + str(endFreq) + ".dat"
@@ -107,7 +139,7 @@ def main(argv):
 	
 					output.write("JOB " + outputfilename + " AnalyticUL.sub\n")
 					output.write("RETRY " + outputfilename + " 0\n")
-					output.write("VARS " + outputfilename + ' argList=" -a ' + Fstatlist[maxFstatInd]['ra'] + " -d " + Fstatlist[maxFstatInd]['dec'] + " -f " + Fstatlist[maxFstatInd]['f0'] + " -b " + str(band) + " -F " + Fstatlist[maxFstatInd]['Fstat'] + " -D '" + filepattern + "' -E /home/sano/master/opt/lscsoft/lalpulsar/share/lalpulsar -y 09-11 -o " + outputDir + "/" + outputfilename + '.txt"\n')
+					output.write("VARS " + outputfilename + ' argList=" -a ' + Fstatlist[maxFstatInd]['ra'] + " -d " + Fstatlist[maxFstatInd]['dec'] + " -f " + Fstatlist[maxFstatInd]['f0'] + " -b " + str(band) + " -F " + Fstatlist[maxFstatInd]['Fstat'] + " -D '" + filepattern + "' -E " + Vars['EphemPath'] +" -y " + Vars['EphemYrs'] + " -o " + outputDir + "/" + outputfilename + '.txt"\n')
 					output.write("\n")
 
 def FStatVeto(FStat, FStatH1, FStatL1):
