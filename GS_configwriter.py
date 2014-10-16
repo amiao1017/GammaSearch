@@ -18,6 +18,7 @@ def main(argv):
 	Tau = 300
 	Mismatch = 0.2
 	startTime = 970840605
+	searchTime = 5*24*3600
 	TObs = 432000
 	TwoF = 40
 
@@ -99,6 +100,8 @@ def main(argv):
 		f.write("Mismatch=" + str(Mismatch) + "\n")
 		f.write("#Start Time\n")
 		f.write("StartTime=" + str(startTime) + "\n")
+		f.write("#Search Duration\n")
+		f.write("SearchTime=" + str(searchTime) + "\n")
 		f.write("#Threshold for 2F\n")
 		f.write("2F=" + str(TwoF) + "\n")
 		f.write("# Ephemeris path for MFD\n")
@@ -109,7 +112,7 @@ def main(argv):
 		f.write("EphemEarth=/mnt/qfs2/jaclyn.sanders/earth00-19-DE405.dat.gz\n")
 		f.write("# Ephemeris sun for CFS\n")
 		f.write("EphemSun=/mnt/qfs2/jaclyn.sanders/sun00-19-DE405.dat.gz\n")
-	
+			
 
 if __name__ == "__main__":
 	main(sys.argv[1:])
