@@ -84,7 +84,7 @@ def main(argv):
 		sys.exit(1)
 
 	try:
-		Vars['tObs'] = float(config.get("InjVars","TObs"))
+		Vars['tObs'] = float(config.get("InjVars","SearchTime"))
 	except:
 		sys.stderr.write("Cannot read tObs\n")
 		sys.exit(1)
@@ -180,12 +180,12 @@ def main(argv):
    		Vars['BandFMax'] = Vars['FMin'] + 3*Vars['FBand']
     		BandingCmdH1 = 'lalapps_ConvertToSFTv2 --inputSFTs=' + str(Vars['H1InputData']) + ' --outputDir=' + str(Vars['H1MFDInput']) + ' --fmin=' + str(Vars['BandFMin']) + ' --fmax=' + str(Vars['BandFMax'])
     		BandingCmdL1 = 'lalapps_ConvertToSFTv2 --inputSFTs=' + str(Vars['L1InputData']) + ' --outputDir=' + str(Vars['L1MFDInput']) + ' --fmin=' + str(Vars['BandFMin']) + ' --fmax=' + str(Vars['BandFMax']) 
-   		print 'Creating small-band SFTs...' 
-    		print BandingCmdH1
+   		#print 'Creating small-band SFTs...' 
+    		#print BandingCmdH1
     		#subprocess.call(BandingCmdH1, shell=True)
-    		print BandingCmdL1
+    		#print BandingCmdL1
     		#subprocess.call(BandingCmdL1, shell=True)
-    		print '...done.'
+    		#print '...done.'
 		
 
 
