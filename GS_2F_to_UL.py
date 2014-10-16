@@ -14,8 +14,8 @@ def main(argv):
 	startFreq = ''
 	endFreq = ''
 	fileLocation = '.'
-	outputDir = '.'
 	outFile = False
+	outputDir = False
 	
 	loudest2F = []
 
@@ -52,14 +52,14 @@ def main(argv):
 		sys.exit(2)
 
 	try:
-		Vars['Band'] = config.get("InjVars","band")
+		Vars['Band'] = float(config.get("InjVars","band"))
 		band = Vars['Band']
 	except:
 		sys.stderr.write("Cannot read band\n")
 		sys.exit(1)
 
 	try:
-		Vars['sourceNumber'] = int(config.get("InjVars","Source")
+		Vars['sourceNumber'] = int(config.get("InjVars","Source"))
 		sourceNumber = Vars['sourceNumber']
 	except:
 		sys.stderr.write("Cannot read sourceNumber\n")
@@ -78,16 +78,19 @@ def main(argv):
 		sys.exit(1)
 
 	if not(outFile):
-		outFile = "GS_UL_" + str(startFreq) + "_" + str(endFreq) + ".dat"
+		outFile = "GS_UL_" + str(sourceNumber) + "_" + str(startFreq) + "_" + str(endFreq) + ".dag"
+	
+	if not(outputDir):
+		outputDir = "GS_aUL_" + str(sourceNumber)
 
 	if not(os.path.isdir(outputDir)):
 		os.makedirs(outputDir)
 
 	freqSteps = int(round((endFreq-startFreq)/band))
 
-	with open(outputDir + "/" + outFile, "w") as output:
+	with open(outFile, "w") as output:
 
-		with open(outputDir + "/GS_UL_" + str(startFreq) + "_" + str(endFreq) + "_record.dat", "w") as record:
+		with open(outputDir + "/GS_UL_" +str(sourceNumber) + "_" + str(startFreq) + "_" + str(endFreq) + "_record.txt", "w") as record:
 
 			record.write("f0 Frequency Search RA Dec Fstat\n")
 
@@ -100,8 +103,8 @@ def main(argv):
 				maxFstatInd = 0
 		
 				filename = fileLocation + "/GammaSearch_" + str(freq) + "_" + str(i) + ".dat"
-				filepattern = fileLocation + "/Data/GS_" + str(sourceNumber) + "_" + str(freq) + "/*.sft" # need to mod for source no.
-
+				filepattern = fileLocation + "/Data/GS_" + str(sourceNumber) + "_" + str(freq) + "/*.sft"
+				
 				while os.path.isfile(filename):						
 					
 					with open(filename, 'r') as input:
@@ -135,11 +138,11 @@ def main(argv):
 
 					record.write(Fstatlist[maxFstatInd]['f0'] + " " + Fstatlist[maxFstatInd]['freq'] + " " + Fstatlist[maxFstatInd]['searchno'] + " " + Fstatlist[maxFstatInd]['ra'] + " " + Fstatlist[maxFstatInd]['dec'] + " " + Fstatlist[maxFstatInd]['Fstat'] + "\n")	
 
-					outputfilename = "UL_" + str(freq) + "_band"
+					outputfilename = "UL_"+ str(sourceNumber) + "_" + str(freq) + "_band"
 	
 					output.write("JOB " + outputfilename + " AnalyticUL.sub\n")
 					output.write("RETRY " + outputfilename + " 0\n")
-					output.write("VARS " + outputfilename + ' argList=" -a ' + Fstatlist[maxFstatInd]['ra'] + " -d " + Fstatlist[maxFstatInd]['dec'] + " -f " + Fstatlist[maxFstatInd]['f0'] + " -b " + str(band) + " -F " + Fstatlist[maxFstatInd]['Fstat'] + " -D '" + filepattern + "' -E " + Vars['EphemPath'] +" -y " + Vars['EphemYrs'] + " -o " + outputDir + "/" + outputfilename + '.txt"\n')
+					output.write("VARS " + outputfilename + ' argList=" -a ' + Fstatlist[maxFstatInd]['ra'] + " -d " + Fstatlist[maxFstatInd]['dec'] + " -f " + Fstatlist[maxFstatInd]['f0'] + " -b " + str(band) + " -F " + Fstatlist[maxFstatInd]['Fstat'] + " -D " + filepattern + " -E " + Vars['EphemPath'] +" -y " + Vars['EphemYrs'] + " -o " + outputDir + "/" + outputfilename + '.txt"\n')
 					output.write("\n")
 
 def FStatVeto(FStat, FStatH1, FStatL1):
