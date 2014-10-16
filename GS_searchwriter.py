@@ -196,7 +196,7 @@ def main(argv):
 	if not(os.path.isdir(outputDir)):
 		os.makedirs(outputDir)
 
-	outputLocation = outputDir+"/"+"GS_"+str(Vars['sourceNumber'])+"_"+str(startFreq)	
+	outputLocation = outputDir+"/"+"GS_"+str(Vars['sourceNumber'])+"_"+str(startFreq)+"_"+str(endFreq)	
 	dataDir = outputLocation+"/Data"	
 
 	if not(os.path.isdir(outputLocation)):
