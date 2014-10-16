@@ -21,6 +21,9 @@ def main(argv):
 	searchTime = 5*24*3600
 	TObs = 432000
 	TwoF = 40
+	lowestF = 50
+	resConstant = 0.83
+	band = 0.1
 
 	usage = "GS_configwriter -s <sourcenumber> -c <catalogfile> [-o <outputDir>]"
 
@@ -94,10 +97,16 @@ def main(argv):
 		f.write("Semiminor="+str(Semiminor)+"\n")
 		f.write("#Semiangle (rad)\n")
 		f.write("Semiangle="+str(Semiangle)+"\n")
+		f.write("#constant for search radius size\n")
+		f.write("resConstant="+str(resConstant)+"\n")
+		f.write("#Search Band\n")
+		f.write("band="+str(band)+"\n")
 		f.write("#Assumed Age (Years)\n")
 		f.write("Age=" + str(Tau) + "\n")
 		f.write("#Mismatch\n")
 		f.write("Mismatch=" + str(Mismatch) + "\n")
+		f.write("#Lowest frequency in search\n")
+		f.write("lowestF=" + str(lowestF) + "\n")
 		f.write("#Start Time\n")
 		f.write("StartTime=" + str(startTime) + "\n")
 		f.write("#Search Duration\n")
