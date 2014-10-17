@@ -2,14 +2,14 @@
 
 #GS_analytic_upper_limits - collects analytic upper limits and plots automagically.
 
-import re, math,os, getopt, array
+import re, math,sys,os, getopt, array, ConfigParser
 import numpy as np
-import matplotlib.pyplot as plt 
-from pylab import *
+#import matplotlib.pyplot as plt 
+#from pylab import *
  
 def main(argv):
 
-	usage = "GS_analytic_upper_limits -r <record file> [-n <source number> -p (plot flag) -f <file location> -b <freq band size> -o <output filename> -d <output directory>]"
+	usage = "GS_analytic_upper_limits -r <record file> -c <config file> [-n <source number> -p (plot flag) -f <file location> -b <freq band size> -o <output filename> -d <output directory>]"
 
 	#load inputs/options
 	
@@ -20,10 +20,9 @@ def main(argv):
 	outputDir = '.'
 	outFile = False
 	plotResults = False
-	sourceNumber = "880"
-
+	
 	try:
-		opts, args = getopt.getopt(argv, "hpr:f:b:o:d:n:", ["help", "plot", "record=", "files=", "band=", "outputFile=", "outputDir=", "sourceNumber="])
+		opts, args = getopt.getopt(argv, "hpr:c:f:o:d:n:", ["help", "plot", "record=", "configFile=", "files=", "outputFile=", "outputDir=", "sourceNumber="])
 	except getopt.GetoptError:
 		print usage
 		sys.exit(2)
@@ -34,10 +33,10 @@ def main(argv):
 			sys.exit()
 		elif opt in ("-r", "--record"):
 			recordfile = arg
+		elif opt in ("-c", "--configFile"):
+			configFile = arg
 		elif opt in ("-f", "--files"):
 			fileLocation = arg
-		elif opt in ("-b", "--band"):
-			band = float(arg)
 		elif opt in ("-o", "--outFile"):
 			outFile = arg
 		elif opt in ("-d", "--outputDir"):
@@ -46,6 +45,25 @@ def main(argv):
 			plotResults = True
 		elif opt in ("-n", "--sourceNumber"):
 			sourceNumber = arg
+
+	try:
+		config = ConfigParser.ConfigParser()
+		config.read(configFile)
+	except:
+		sys.stderr.write("Cannot import Config File " + configFile + " exiting... \n")
+		sys.exit(2)
+
+	try:
+		sourceNumber = config.get("InjVars","Source")
+	except:
+		sys.stderr.write("Cannot read sourceNumber\n")
+		sys.exit(1)
+
+	try:
+		band = float(config.get("InjVars","band"))
+	except:
+		sys.stderr.write("Cannot read band\n")
+		sys.exit(1)
 
 	try:
 		recordfile
@@ -71,7 +89,7 @@ def main(argv):
 		startFreq = input_record[0]
 		freqSteps = 1
 
-	endFreq = startFreq + freqSteps*band
+	endFreq = input_record[-1,0] + band
 
 	if not(outFile):
 		outFile = "Analytic_UL_" + str(startFreq) + "_" + str(endFreq) + ".dat"
@@ -82,9 +100,13 @@ def main(argv):
 		output.write("ULfrequency ULim SearchNo RA Dec FStat\n")
 
 		for step in xrange(0,freqSteps):
-			freq0 = startFreq + step*band
+			
+			if freqSteps == 1:
+				freq0 = startFreq
+			else:
+				freq0 = input_record[step,0]
 
-			filename = "UL_" + str(freq0) + "_band.txt"
+			filename = "UL_" + str(sourceNumber)+ "_" str(freq0) + "_band.txt"
 
 			with open(fileLocation + "/" + filename, "r") as f:
 				data = f.readlines()[-3:-2]
@@ -106,14 +128,14 @@ def main(argv):
 	
 						
 
-	if plotResults:
-		fig = plt.figure(figsize=(8,6))
-		ax = fig.add_subplot(1,1,1)
-		ax.plot(ULFreqs, ULims, 'ro')
-		ax.set_xlabel('Frequency (Hz)')
-		ax.set_ylabel('h0 (95% upper limit)')
-		ax.set_title("Analytic Upper Limits for source " + sourceNumber, fontsize="large") 
-		plt.savefig('Analytic_UL_' + str(startFreq) + "_" + str(endFreq) + ".png")
+#	if plotResults:
+#		fig = plt.figure(figsize=(8,6))
+#		ax = fig.add_subplot(1,1,1)
+#		ax.plot(ULFreqs, ULims, 'ro')
+#		ax.set_xlabel('Frequency (Hz)')
+#		ax.set_ylabel('h0 (95% upper limit)')
+#		ax.set_title("Analytic Upper Limits for source " + sourceNumber, fontsize="large") 
+#		plt.savefig('Analytic_UL_' + str(startFreq) + "_" + str(endFreq) + ".png")
 	
 
 if __name__ == "__main__":
