@@ -1,0 +1,74 @@
+Documentation for use of GammaSearch code-base
+J.R. Sanders
+Oct 16 2014
+
+This script set should (in theory) be able to handle every step of a CW search uusing lalapps_ComputeFStatistic_v2. Let's see how it works.
+
+Step 1: Use GS_configwriter.py to produce a configuration file for each source. 
+	
+	Syntax: GS_configwriter.py -s <source number> -c <catalog file> [-o <outputDir>]
+	
+	The catalog file is "GS_configtable.txt".
+
+	For this test I executed:
+	
+	GS_configwriter.py -s 880 -c GS_configtable.txt -o ConfigFiles
+
+	Which produced ConfigFiles/ConfigFile_880.ini.
+
+Step 2: Use GS_searchwriter.py to write the search. 
+
+	Syntax: GS_searchwriter -s <start frequency> -e <end frequency> -c <config file> [-o <output directory> --subFiles <sub file location>]
+
+	For this test I executed:
+	
+	GS_searchwriter.py -s 200 -e 210 -c ConfigFiles/ConfigFile_880.ini --subFiles=SubFiles
+	
+	Which produced GS_880_200.0_210.0.dag.
+
+Step 3: Submit search dag!
+	
+	condor_submit_dag -f GS_880_200.0_210.0.dag
+
+	Took ~25 minutes to run the 10 Hz span from 200-210 Hz
+
+	Produces outputs in GS_880/GS_880_200.0_210.0
+
+Step 4: Use GS_2F_to_UL.py to set up dags to run analytical upper limits.
+
+	Syntax: GS_2F_to_UL -s <start frequency> -e <end frequency> -c <config file> -f <file location> [-o <output filename> -d <output directory>]
+
+	For this test I used:
+
+	GS_2F_to_UL.py -s 200 -e 210 -c ConfigFiles/ConfigFile_880.ini -f GS_880/GS_880_200.0_210.0
+
+	Produces GS_UL_880_200.0_210.0.dag and GS_UL_880_200.0_210.0_record.txt
+
+Step 5: Submit analytic UL dag!
+
+	condor_submit_dag -f GS_UL_880_200.0_210.0.dag
+
+	Took ~10 min.
+
+	Produces outputs in GS_aUL_880
+
+Step 6: Use GS_analytic_upper_limits to collect upper limits from files
+
+	Syntax: GS_analytic_upper_limits.py -r <record file from analytic UL> -f <analytic UL locations> -c <config file>
+
+	For this test:
+
+	GS_analytic_upper_limits.py -r GS_aUL_880/GS_UL_880_200.0_210.0_record.txt -f GS_aUL_880 -c ConfigFiles/ConfigFile_880.ini
+
+	Produces output Analytic_UL_200.0_210.0.dat.
+
+Step 7: Use GS_UL_injection_writer to set up injections.
+
+	Syntax: GS_UL_injection_writer.py -r <record file> -c <config file> -s <start frequency> -e <end frequency> --subFiles <sub file location>
+
+	For this test I used:
+
+	python GS_UL_injection_writer.py -r Analytic_UL_200.0_210.0.dat -c ConfigFiles/ConfigFile_880.ini --startFreq=200 --endFreq=210 -- subFiles=SubFiles
+
+	Produces injection dag GS_UL_880_Injections_200.0_210.0.dag and search dag GS_UL_880_Searches_200.0_210.0.dag
+
