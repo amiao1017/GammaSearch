@@ -179,6 +179,8 @@ def main(argv):
 	freqRange = endFreq-startFreq
 	freqSteps = int(round(freqRange/Vars['FBand']))
 
+	searchSteps = int(round(freqRange/Vars['SearchBand']))
+
 	freqList = np.zeros((freqSteps))
 	dataLocs = []
 		
@@ -210,7 +212,7 @@ def main(argv):
     		#subprocess.call(BandingCmdL1, shell=True)
     		#print '...done.'
 		
-
+	Vars['FMin'] = startFreq
 
 
 
@@ -233,103 +235,108 @@ def main(argv):
 					if not(os.path.isdir(strain_output)):
 						os.makedirs(strain_output)
 
-					for i in xrange(0,nInjections):
 					
-						#generate random nuisance parameters
-						Vars['CosIota'] = random.uniform(-1,1)
-						Vars['Psi'] = random.uniform(0,2*math.pi)
-						Vars['Phi0'] = random.uniform(0,2*math.pi)
-
-						#generate random frequency parameters
-						Freq = Vars['FMin'] + Vars['SearchBand']*random.uniform(0,1)
-						
-						bindiff = search_record[:,0]-Freq
-						binlist = bindiff[bindiff<0]
-						searchindex = len(binlist)-1
-
-						datalocdiff = freqList[:] - Freq
-						dataloclist = datalocdiff[datalocdiff<0]
-						dataLocation = dataLocs[len(dataloclist)-1]
-						
-						# outputLocation/strainfactor_n/test_i		
-
-						Vars['CFSInput'] = strain_output + "/test_" + str(i)
+					for search in range(0, searchSteps):
 		
-						if not(os.path.isdir(Vars['CFSInput'])):
-							os.makedirs(Vars['CFSInput'])
+
+						for i in xrange(0,nInjections):
+					
+							#generate random nuisance parameters
+							Vars['CosIota'] = random.uniform(-1,1)
+							Vars['Psi'] = random.uniform(0,2*math.pi)
+							Vars['Phi0'] = random.uniform(0,2*math.pi)
+
+							#generate random frequency parameters
+							Freq0 = Vars['FMin'] + Vars['SearchBand']*search
+							Freq = Vars['FMin'] + Vars['SearchBand']*(search + random.uniform(0,1))
+						
+							bindiff = search_record[:,0]-Freq
+							binlist = bindiff[bindiff<0]
+							searchindex = len(binlist)-1
+
+							datalocdiff = freqList[:] - Freq
+							dataloclist = datalocdiff[datalocdiff<0]
+							dataLocation = dataLocs[len(dataloclist)-1]
+						
+							# outputLocation/strainfactor_n/test_i		
+
+							Vars['CFSInput'] = strain_output + "/test_" + str(i)
+		
+							if not(os.path.isdir(Vars['CFSInput'])):
+								os.makedirs(Vars['CFSInput'])
 									
-						Vars['SearchNo'] = search_record[searchindex,3]
-						Vars['Alpha'] = search_record[searchindex,4]
-						Vars['Delta'] = search_record[searchindex,5]
-						Vars['h0Test'] = search_record[searchindex,1]*strainfactor
+							Vars['SearchNo'] = search_record[searchindex,3]
+							Vars['Alpha'] = search_record[searchindex,4]
+							Vars['Delta'] = search_record[searchindex,5]
+							Vars['h0Test'] = search_record[searchindex,1]*strainfactor
 											
 	
-						Vars['FDotMin'] = -Freq/TauSecs
-						Vars['FDotMax'] = -Freq/(6.0*TauSecs)
-						FDot = Vars['FDotMin'] + (Vars['FDotMax']-Vars['FDotMin'])*random.uniform(0,1)
-						Vars['FDotDotMin'] = (2*FDot*FDot)/Freq
-						Vars['FDotDotMax'] = (7*FDot*FDot)/Freq
-						FDotDot = Vars['FDotDotMin'] + (Vars['FDotDotMax']-Vars['FDotDotMin'])*random.uniform(0,1)
-						FreqVars = array.array('d',[0,0,0])
-						FreqVars[0] = Freq
-						FreqVars[1] = FDot
-						FreqVars[2] = FDotDot
+							Vars['FDotMin'] = -Freq/TauSecs
+							Vars['FDotMax'] = -Freq/(6.0*TauSecs)
+							FDot = Vars['FDotMin'] + (Vars['FDotMax']-Vars['FDotMin'])*random.uniform(0,1)
+							Vars['FDotDotMin'] = (2*FDot*FDot)/Freq
+							Vars['FDotDotMax'] = (7*FDot*FDot)/Freq
+							FDotDot = Vars['FDotDotMin'] + (Vars['FDotDotMax']-Vars['FDotDotMin'])*random.uniform(0,1)
+							FreqVars = array.array('d',[0,0,0])
+							FreqVars[0] = Freq
+							FreqVars[1] = FDot
+							FreqVars[2] = FDotDot
 
-						#Calculate search box to generate smaller SFTs
-						#Create array with desired tempalte spacings -- [10*df, 6*dfdot, 3*dfdotdot]
-						TemplateSpacings = array.array('d',[2*math.sqrt((300*Vars['m'])/((math.pi**2)*(Vars['tObs']**2))),2*math.sqrt((6480*Vars['m'])/((math.pi**2)*(Vars['tObs']**4))),2*math.sqrt((25200*Vars['m'])/((math.pi**2)*(Vars['tObs']**6)))])
-						#Use template spacings to create "search box" to search for injections
-						SearchBox = array.array('d',[0,0,0])
-						SearchBand = array.array('d',[0,0,0])
-					  	SearchBox[0] = FreqVars[0] - (4.0 + random.uniform(0,1)) * TemplateSpacings[0]
-    						SearchBand[0] = 9 * TemplateSpacings[0]
-    						SearchBox[1] = FreqVars[1] - (4.0 + random.uniform(0,1)) * TemplateSpacings[1]
-   	 					SearchBand[1] = 9 * TemplateSpacings[1]
-    						SearchBox[2] = FreqVars[2] - (4.0 + random.uniform(0,1)) * TemplateSpacings[2]
-    						SearchBand[2] = 9 * TemplateSpacings[2]
+							#Calculate search box to generate smaller SFTs
+							#Create array with desired tempalte spacings -- [10*df, 6*dfdot, 3*dfdotdot]
+							TemplateSpacings = array.array('d',[2*math.sqrt((300*Vars['m'])/((math.pi**2)*(Vars['tObs']**2))),2*math.sqrt((6480*Vars['m'])/((math.pi**2)*(Vars['tObs']**4))),2*math.sqrt((25200*Vars['m'])/((math.pi**2)*(Vars['tObs']**6)))])
+							#Use template spacings to create "search box" to search for injections
+							SearchBox = array.array('d',[0,0,0])
+							SearchBand = array.array('d',[0,0,0])
+					  		SearchBox[0] = FreqVars[0] - (4.0 + random.uniform(0,1)) * TemplateSpacings[0]
+    							SearchBand[0] = 9 * TemplateSpacings[0]
+    							SearchBox[1] = FreqVars[1] - (4.0 + random.uniform(0,1)) * TemplateSpacings[1]
+   	 						SearchBand[1] = 9 * TemplateSpacings[1]
+    							SearchBox[2] = FreqVars[2] - (4.0 + random.uniform(0,1)) * TemplateSpacings[2]
+    							SearchBand[2] = 9 * TemplateSpacings[2]
 
-    						Vars['Padding'] = 0.2
+    							Vars['Padding'] = 0.2
 
-						#generates MFD and writes out to injection file
+							#generates MFD and writes out to injection file
 
-						Vars['MFDFmin'] = SearchBox[0] - Vars['Padding']
-						Vars['MFDFBand'] = SearchBand[0] + 2*Vars['Padding']
-						Vars['MFDLogFile'] = str(Vars['CFSInput']) + "/MFD_log.txt"
+							Vars['MFDFmin'] = SearchBox[0] - Vars['Padding']
+							Vars['MFDFBand'] = SearchBand[0] + 2*Vars['Padding']
+							Vars['MFDLogFile'] = str(Vars['CFSInput']) + "/MFD_log.txt"
 
-						jobName = "GS_UL_Injection_"+str(strainfactor)+ "_" + str(i)
-						
-						MFDCmdH1 = 'VARS ' + jobName + '_H1 argList= "--outSFTbname=' + str(Vars['CFSInput']) + ' --IFO=H1 --ephemDir=' + str(Vars['EphemPath']) + ' --ephemYear=' + str(Vars['EphemYrs']) + ' --fmin=' + str(Vars['MFDFmin']) + ' --Band=' + str(Vars['MFDFBand']) + ' --refTime=' + str(Vars['tStartGPS']) + ' --RA=' + str(Vars['Alpha']) + ' --Dec=' + str(Vars['Delta']) + ' --h0=' + str(Vars['h0Test']) + ' --cosi=' + str(Vars['CosIota']) + ' --psi=' + str(Vars['Psi']) + ' --phi0=' + str(Vars['Phi0']) + ' --Freq=' + str(FreqVars[0]) + ' --f1dot=' + str(FreqVars[1]) + ' --f2dot=' + str(FreqVars[2]) + ' --logfile=' + str(Vars['MFDLogFile']) + ' --noiseSFTs=' + dataLocation + '/H1/*.sft"'
+							jobName = "GS_UL_Injection_"+ str(Freq0) + "_" + str(strainfactor)+ "_" + str(i)
+							
+							MFDCmdH1 = 'VARS ' + jobName + '_H1 argList= "--outSFTbname=' + str(Vars['CFSInput']) + ' --IFO=H1 --ephemDir=' + str(Vars['EphemPath']) + ' --ephemYear=' + str(Vars['EphemYrs']) + ' --fmin=' + str(Vars['MFDFmin']) + ' --Band=' + str(Vars['MFDFBand']) + ' --refTime=' + str(Vars['tStartGPS']) + ' --RA=' + str(Vars['Alpha']) + ' --Dec=' + str(Vars['Delta']) + ' --h0=' + str(Vars['h0Test']) + ' --cosi=' + str(Vars['CosIota']) + ' --psi=' + str(Vars['Psi']) + ' --phi0=' + str(Vars['Phi0']) + ' --Freq=' + str(FreqVars[0]) + ' --f1dot=' + str(FreqVars[1]) + ' --f2dot=' + str(FreqVars[2]) + ' --logfile=' + str(Vars['MFDLogFile']) + ' --noiseSFTs=' + dataLocation + '/H1/*.sft"'
 
-   						MFDCmdL1 = 'VARS ' + jobName + '_L1 argList= "--outSFTbname=' + str(Vars['CFSInput']) + ' --IFO=L1 --ephemDir=' + str(Vars['EphemPath']) + ' --ephemYear=' + str(Vars['EphemYrs']) + ' --fmin=' + str(Vars['MFDFmin']) + ' --Band=' + str(Vars['MFDFBand']) + ' --refTime=' + str(Vars['tStartGPS']) + ' --RA=' + str(Vars['Alpha']) + ' --Dec=' + str(Vars['Delta']) + ' --h0=' + str(Vars['h0Test']) + ' --cosi=' + str(Vars['CosIota']) + ' --psi=' + str(Vars['Psi']) + ' --phi0=' + str(Vars['Phi0']) + ' --Freq=' + str(FreqVars[0]) + ' --f1dot=' + str(FreqVars[1]) + ' --f2dot=' + str(FreqVars[2]) + ' --noiseSFTs=' + dataLocation + '/L1/*.sft"'
+   							MFDCmdL1 = 'VARS ' + jobName + '_L1 argList= "--outSFTbname=' + str(Vars['CFSInput']) + ' --IFO=L1 --ephemDir=' + str(Vars['EphemPath']) + ' --ephemYear=' + str(Vars['EphemYrs']) + ' --fmin=' + str(Vars['MFDFmin']) + ' --Band=' + str(Vars['MFDFBand']) + ' --refTime=' + str(Vars['tStartGPS']) + ' --RA=' + str(Vars['Alpha']) + ' --Dec=' + str(Vars['Delta']) + ' --h0=' + str(Vars['h0Test']) + ' --cosi=' + str(Vars['CosIota']) + ' --psi=' + str(Vars['Psi']) + ' --phi0=' + str(Vars['Phi0']) + ' --Freq=' + str(FreqVars[0]) + ' --f1dot=' + str(FreqVars[1]) + ' --f2dot=' + str(FreqVars[2]) + ' --noiseSFTs=' + dataLocation + '/L1/*.sft"'
 						
 										
-						MFD.write('JOB ' + jobName + '_H1 ' + MFDsubFileName + '\n')
-						MFD.write('RETRY ' + jobName + '_H1 0\n')
-						MFD.write(MFDCmdH1 + "\n\n")
-						MFD.write('JOB ' + jobName + '_L1 ' + MFDsubFileName + '\n')
-						MFD.write('RETRY ' + jobName + '_L1 0\n')
-						MFD.write(MFDCmdL1 + "\n\n")
+							MFD.write('JOB ' + jobName + '_H1 ' + MFDsubFileName + '\n')
+							MFD.write('RETRY ' + jobName + '_H1 0\n')
+							MFD.write(MFDCmdH1 + "\n\n")
+							MFD.write('JOB ' + jobName + '_L1 ' + MFDsubFileName + '\n')
+							MFD.write('RETRY ' + jobName + '_L1 0\n')
+							MFD.write(MFDCmdL1 + "\n\n")
 						
-						#generates CFS and writes out to CFS dag
-
-						Vars['CFSOutput'] = strain_output + "/CFS_Out_Test_"+str(i)+".dat"
-						Vars['CFSHist'] = strain_output + "/CFS_Hist_Test_"+str(i)+".dat"
-						Vars['CFSTopList'] = strain_output+"/CFS_Max_Test_"+str(i)+".dat"
+							#generates CFS and writes out to CFS dag
+	
+							Vars['CFSOutput'] = strain_output + "/CFS_Out_Test_"+str(i)+".dat"
+							Vars['CFSHist'] = strain_output + "/CFS_Hist_Test_"+str(i)+".dat"
+							Vars['CFSTopList'] = strain_output+"/CFS_Max_Test_"+str(i)+".dat"
 
 						
 
-						CFSv2Cmd = 'VARS ' + jobName + ' arglist=" --RA=' + str(Vars['Alpha']) + ' --Dec=' + str(Vars['Delta']) + ' --Freq=' + str(SearchBox[0]) + ' --f1dot=' + str(SearchBox[1]) + ' --f2dot=' + str(SearchBox[2]) + ' --FreqBand=' + str(SearchBand[0]) + ' --f1dotBand=' + str(SearchBand[1]) + ' --f2dotBand=' + str(SearchBand[2]) + ' --DataFiles="' + str(Vars['CFSInput']) + '/*.sft" --ephemEarth=' + str(Vars['EphemEarth']) + ' --ephemSun=' + str(Vars['EphemSun']) + ' --TwoFthreshold=' + str(Vars['2FThresh']) + ' --outputFstat=' + str(Vars['CFSOutput']) + ' --outputFstatHist=' + str(Vars['CFSHist']) + ' --metricMismatch=' + str(Vars['m']) + ' --gridType=8 --refTime=' + str(Vars['tStartGPS']) + ' --outputSingleFstats=TRUE --outputLoudest=' + str(Vars['CFSTopList']) + ' --useResamp=TRUE"'
+							CFSv2Cmd = 'VARS ' + jobName + ' arglist=" --RA=' + str(Vars['Alpha']) + ' --Dec=' + str(Vars['Delta']) + ' --Freq=' + str(SearchBox[0]) + ' --f1dot=' + str(SearchBox[1]) + ' --f2dot=' + str(SearchBox[2]) + ' --FreqBand=' + str(SearchBand[0]) + ' --f1dotBand=' + str(SearchBand[1]) + ' --f2dotBand=' + str(SearchBand[2]) + ' --DataFiles="' + str(Vars['CFSInput']) + '/*.sft" --ephemEarth=' + str(Vars['EphemEarth']) + ' --ephemSun=' + str(Vars['EphemSun']) + ' --TwoFthreshold=' + str(Vars['2FThresh']) + ' --outputFstat=' + str(Vars['CFSOutput']) + ' --outputFstatHist=' + str(Vars['CFSHist']) + ' --metricMismatch=' + str(Vars['m']) + ' --gridType=8 --refTime=' + str(Vars['tStartGPS']) + ' --outputSingleFstats=TRUE --outputLoudest=' + str(Vars['CFSTopList']) + ' --useResamp=TRUE"'
 
 
-						CFS.write('JOB ' + jobName + ' ' + CFSsubFileName + '\n')
-						CFS.write('RETRY ' + jobName + ' 0\n')
-						CFS.write(CFSv2Cmd + "\n\n")
+							CFS.write('JOB ' + jobName + ' ' + CFSsubFileName + '\n')
+							CFS.write('RETRY ' + jobName + ' 0\n')
+							CFS.write(CFSv2Cmd + "\n\n")
 
-						#StrainFactor Injection Frequency FrequencyBin SearchPos Alpha Delta	
+							#StrainFactor Injection Frequency FrequencyBin SearchPos Alpha Delta	
 
-						RecordCmd = str(strainfactor) + ' ' + str(i) + ' ' + str(Freq) + ' ' + str(search_record[searchindex,0]) + ' ' + str(Vars['SearchNo']) + ' ' + str(Vars['Alpha']) + ' ' + str(Vars['Delta'])
+							RecordCmd = str(strainfactor) + ' ' + str(i) + ' ' + str(Freq) + ' ' + str(search_record[searchindex,0]) + ' ' + str(Vars['SearchNo']) + ' ' + str(Vars['Alpha']) + ' ' + str(Vars['Delta'])
 
-						record.write(RecordCmd + "\n")
+							record.write(RecordCmd + "\n")
 						
 if __name__ == "__main__":
 	main(sys.argv[1:])
