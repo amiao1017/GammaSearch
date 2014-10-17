@@ -101,12 +101,12 @@ def main(argv):
 				i = 0
 				maxFstat = 0
 				maxFstatInd = 0
-		
+
 				filename = fileLocation + "/GammaSearch_" + str(freq) + "_" + str(i) + ".dat"
 				filepattern = fileLocation + "/Data/GS_" + str(sourceNumber) + "_" + str(freq) + "/*.sft"
 				
 				while os.path.isfile(filename):						
-					
+
 					with open(filename, 'r') as input:
 						data = input.readlines()[20:-1]
 
@@ -123,23 +123,19 @@ def main(argv):
 						source['f0'] = str(freq)
 						source['searchno'] = str(i)
 
-						if FStatVeto(source['Fstat'], source['FstatH1'], source['FstatL1']):
+						if FStatVeto(source['Fstat'], source['FstatH1'], source['FstatL1']) and (source['Fstat'] > maxFstat):
 							Fstatlist.append(source)
-							if (source['Fstat'] > maxFstat):
-								maxFstat = source['Fstat']
-								maxFstatInd = int(source['searchno'])
-							break
-						
+							maxFstat = source['Fstat']
+							maxFstatInd = int(source['searchno'])
+							break							
+												
 					i = i + 1
-		
+					filename = fileLocation + "/GammaSearch_" + str(freq) + "_" + str(i) + ".dat"			
+					
+	
+	
+				if Fstatlist:
 
-					filename = fileLocation + "/GammaSearch_" + str(freq) + "_" + str(i) + ".dat" 
-	
-	
-				try:
-					Fstatlist[maxFstatInd]
-				except:
-					record.write(source['f0'] + " no valid UL")
 
 					record.write(Fstatlist[maxFstatInd]['f0'] + " " + Fstatlist[maxFstatInd]['freq'] + " " + Fstatlist[maxFstatInd]['searchno'] + " " + Fstatlist[maxFstatInd]['ra'] + " " + Fstatlist[maxFstatInd]['dec'] + " " + Fstatlist[maxFstatInd]['Fstat'] + "\n")	
 
