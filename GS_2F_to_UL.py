@@ -108,7 +108,7 @@ def main(argv):
 				while os.path.isfile(filename):						
 					
 					with open(filename, 'r') as input:
-						data = input.readlines()[20:21]
+						data = input.readlines()[20:-1]
 
 					for line in data:
 						line = line.strip()
@@ -122,19 +122,24 @@ def main(argv):
 						source['FstatL1'] = columns[8]
 						source['f0'] = str(freq)
 						source['searchno'] = str(i)
-						Fstatlist.append(source)
-						if (source['Fstat'] > maxFstat):
-							maxFstat = source['Fstat']
-							maxFstatInd = int(source['searchno'])
-			
+
+						if FStatVeto(source['Fstat'], source['FstatH1'], source['FstatL1']):
+							Fstatlist.append(source)
+							if (source['Fstat'] > maxFstat):
+								maxFstat = source['Fstat']
+								maxFstatInd = int(source['searchno'])
+							break
+						
 					i = i + 1
 		
 
 					filename = fileLocation + "/GammaSearch_" + str(freq) + "_" + str(i) + ".dat" 
 	
 	
-				if FStatVeto(Fstatlist[maxFstatInd]['Fstat'],Fstatlist[maxFstatInd]['FstatH1'], Fstatlist[maxFstatInd]['FstatL1']):
-
+				try:
+					Fstatlist[maxFstatInd]
+				except:
+					record.write(source['f0'] + " no valid UL")
 
 					record.write(Fstatlist[maxFstatInd]['f0'] + " " + Fstatlist[maxFstatInd]['freq'] + " " + Fstatlist[maxFstatInd]['searchno'] + " " + Fstatlist[maxFstatInd]['ra'] + " " + Fstatlist[maxFstatInd]['dec'] + " " + Fstatlist[maxFstatInd]['Fstat'] + "\n")	
 
