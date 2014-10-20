@@ -319,7 +319,7 @@ def main(argv):
 	
 							Vars['CFSOutput'] = strain_output + "/CFS_Out_Freq_" + str(Freq0) + "_Test_"+str(i)+".dat"
 							Vars['CFSHist'] = strain_output + "/CFS_Hist_Freq_"+ str(Freq0) + "_Test_" + str(i)+".dat"
-							Vars['CFSTopList'] = strain_output+"/CFS_Max_Freq_"+ str(Freq0) + "_Test_str(i)" + ".dat"
+							Vars['CFSTopList'] = strain_output+"/CFS_Max_Freq_"+ str(Freq0) + "_Test_" + str(i) + ".dat"
 
 							CFS.write('JOB ' + jobName + ' ' + CFSsubFileName + '\n')
 							CFS.write('RETRY ' + jobName + ' 0\n')
