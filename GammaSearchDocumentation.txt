@@ -68,7 +68,45 @@ Step 7: Use GS_UL_injection_writer to set up injections.
 
 	For this test I used:
 
-	python GS_UL_injection_writer.py -r Analytic_UL_200.0_210.0.dat -c ConfigFiles/ConfigFile_880.ini --startFreq=200 --endFreq=210 -- subFiles=SubFiles
+	python GS_UL_injection_writer.py -r Analytic_UL_200.0_210.0.dat -c ConfigFiles/ConfigFile_880.ini --startFreq=200 --endFreq=210 --subFiles=SubFiles
 
-	Produces injection dag GS_UL_880_Injections_200.0_210.0.dag and search dag GS_UL_880_Searches_200.0_210.0.dag
+	Produces injection dag GS_UL_880_Injections_200.0_210.0.dag and search dag GS_UL_880_Searches_200.0_210.0.dag...
 
+
+Step 8: Submit injection dag.
+
+	condor_submit_dag -f GS_UL_880_Injections_200.0_210.0.dag
+
+	Took ~2-5 min
+
+	Produces outputs in GS_UL_880/GS_UL_880_200.0_210.0/strain_*/freq_*_test_*
+
+Step 9: Submit search dag.
+
+	condor_submit_dag -f GS_UL_880_Searches_200.0_210.0.dag
+
+	Took ~45 min
+
+	Produces outputs in  GS_UL_880/GS_UL_880_200.0_210.0/strain_*
+
+	CFS out: CFS_Out_Freq_*_Test_*.dat
+	CFS histogram: CFS_Hist_Freq_*_Test_*.dat
+	CFS max: CFS_Max_Freq_*_Test_*.dat
+
+Step 10: Use GS_UL_ratios to get the frequency/strain/ratio collected.
+
+	Syntax: GS_UL_ratios -r <record file> -s <start frequency> [-d <input directory> -o <output file>]
+
+	For this test I used:
+
+	GS_UL_ratios.py -r GS_UL_880_Injection_Record_200.0_210.0.txt -d GS_UL_880/GS_UL_880_200.0_210.0 -s 200
+
+	Which produced:
+
+	UL_ratios_200.txt
+
+	Which is seriously useless because you can't make statistical statements based on 2 injections/point, BUT it works all the way through!
+
+Step 11: Fitting.
+
+	Will have to wait until I do a trial with more than 2 injections/strain, and more than 2 strains.
