@@ -195,7 +195,7 @@ def main(argv):
 
 			with open(injectionRecord, "w") as record:
 
-				record.write('StrainFactor Injection Frequency FrequencyBin SearchPos Alpha Delta\n')
+				record.write('StrainFactor Injection 2F Frequency FrequencyBin SearchPos Alpha Delta\n')
 
 				for search in range(0, searchSteps):
 
@@ -323,11 +323,13 @@ def main(argv):
 
 							CFS.write('JOB ' + jobName + ' ' + CFSsubFileName + '\n')
 							CFS.write('RETRY ' + jobName + ' 0\n')
-							CFS.write("VARS " + jobName + ' argList=" --Alpha=' + str(Vars['Alpha']) + ' --Delta=' + str(Vars['Delta']) + ' --Freq=' + str(SearchBox[0]) + ' --f1dot=' + str(SearchBox[1]) + ' --f2dot=' + str(SearchBox[2]) + ' --FreqBand=' + str(SearchBand[0]) + ' --f1dotBand=' + str(SearchBand[1]) + ' --f2dotBand=' + str(SearchBand[2]) + ' --DataFiles=' + str(Vars['CFSInput']) + '/*.sft --TwoFthreshold=' + str(Vars['2FThresh']) + ' --NumCandidatesToKeep=100 --gridType=8 --outputFstat=' + str(Vars['CFSOutput']) + ' --outputFstatHist=' + str(Vars['CFSHist']) + ' --outputLoudest=' + str(Vars['CFSTopList']) + ' --outputLogfile=' + strain_output + '/CFSlog.txt --refTime=' + str(Vars['startTime']) + ' --minStartTime=' + str(Vars['startTime']) + ' --maxEndTime=' + str(Vars['endTime']) + ' --outputSingleFstats=TRUE --metricMismatch=' + str(Vars['m']) + ' --dFreq=1e-6 --useResamp=TRUE --ephemEarth='+ str(Vars['EphemEarth']) + ' --ephemSun='+str(Vars['EphemSun'])+'"\n\n')
+							#CFS.write("VARS " + jobName + ' argList=" --Alpha=' + str(Vars['Alpha']) + ' --Delta=' + str(Vars['Delta']) + ' --Freq=' + str(SearchBox[0]) + ' --f1dot=' + str(SearchBox[1]) + ' --f2dot=' + str(SearchBox[2]) + ' --FreqBand=' + str(SearchBand[0]) + ' --f1dotBand=' + str(SearchBand[1]) + ' --f2dotBand=' + str(SearchBand[2]) + ' --DataFiles=' + str(Vars['CFSInput']) + '/*.sft --TwoFthreshold=' + str(Vars['2FThresh']) + ' --NumCandidatesToKeep=50 --gridType=8 --outputFstat=' + str(Vars['CFSOutput']) + ' --outputFstatHist=' + str(Vars['CFSHist']) + ' --outputLoudest=' + str(Vars['CFSTopList']) + ' --outputLogfile=' + strain_output + '/CFSlog.txt --refTime=' + str(Vars['startTime']) + ' --minStartTime=' + str(Vars['startTime']) + ' --maxEndTime=' + str(Vars['endTime']) + ' --outputSingleFstats=TRUE --metricMismatch=' + str(Vars['m']) + ' --dFreq=1e-6 --useResamp=TRUE --ephemEarth='+ str(Vars['EphemEarth']) + ' --ephemSun='+str(Vars['EphemSun'])+'"\n\n')
+							CFS.write("VARS " + jobName + ' argList=" --Alpha=' + str(Vars['Alpha']) + ' --Delta=' + str(Vars['Delta']) + ' --Freq=' + str(SearchBox[0]) + ' --f1dot=' + str(SearchBox[1]) + ' --f2dot=' + str(SearchBox[2]) + ' --FreqBand=' + str(SearchBand[0]) + ' --f1dotBand=' + str(SearchBand[1]) + ' --f2dotBand=' + str(SearchBand[2]) + ' --DataFiles=' + str(Vars['CFSInput']) + '/*.sft --NumCandidatesToKeep=100 --gridType=8 --outputFstat=' + str(Vars['CFSOutput']) + ' --outputFstatHist=' + str(Vars['CFSHist']) + ' --outputLoudest=' + str(Vars['CFSTopList']) + ' --outputLogfile=' + strain_output + '/CFSlog.txt --refTime=' + str(Vars['startTime']) + ' --minStartTime=' + str(Vars['startTime']) + ' --maxEndTime=' + str(Vars['endTime']) + ' --outputSingleFstats=TRUE --metricMismatch=' + str(Vars['m']) + ' --dFreq=1e-6 --useResamp=TRUE --ephemEarth='+ str(Vars['EphemEarth']) + ' --ephemSun='+str(Vars['EphemSun'])+'"\n\n')
 
-							#StrainFactor Injection Frequency FrequencyBin SearchPos Alpha Delta	
 
-							RecordCmd = str(strainfactor) + ' ' + str(i) + ' ' + str(Freq) + ' ' + str(search_record[searchindex,0]) + ' ' + str(Vars['SearchNo']) + ' ' + str(Vars['Alpha']) + ' ' + str(Vars['Delta'])
+							#StrainFactor Injection 2F Frequency FrequencyBin SearchPos Alpha Delta	
+
+							RecordCmd = str(strainfactor) + ' ' + str(i) + ' ' + str(search_record[searchindex,6]) + ' ' +  str(Freq) + ' ' + str(search_record[searchindex,0]) + ' ' + str(Vars['SearchNo']) + ' ' + str(Vars['Alpha']) + ' ' + str(Vars['Delta'])
 
 							record.write(RecordCmd + "\n")
 						
