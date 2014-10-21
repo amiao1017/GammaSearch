@@ -17,7 +17,8 @@ def main(argv):
 
 	Tau = 300
 	Mismatch = 0.2
-	startTime = 970840605
+	#startTime = 970840605
+	startTime = 964505847
 	searchTime = 5*24*3600
 	TObs = 432000
 	TwoF = 40
