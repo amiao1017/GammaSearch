@@ -236,8 +236,7 @@ def main(argv):
 
 					Vars['CosIota'] = cosi
 
-					jobName = "PUn_"+ str(freq) + "_" + str(cosi)
-					
+										
 					MFDCmdH1 = 'VARS ' + jobName + '_H1 argList=" --outSFTbname=' + str(Vars['CFSInput']) + " --IFO=H1 --ephemDir=" + str(Vars['EphemPath']) + " --ephemYear=" + str(Vars['EphemYrs']) + " --fmin=" + str(Vars['MFDFmin']) + " --Band=" + str(Vars['MFDFBand']) + " --refTime=" + str(Vars['startTime']) + " --Alpha=" + str(Vars['Alpha']) + " --Delta=" + str(Vars['Delta']) + " --h0=" + str(Vars['h0Test']) + " --cosi=" + str(Vars['CosIota']) + " --psi=" + str(Vars['Psi']) + " --phi0=" + str(Vars['Phi0']) + " --Freq=" + str(FreqVars[0]) + " --f1dot=" + str(FreqVars[1]) + " --f2dot=" + str(FreqVars[2]) + " --logfile=" + str(Vars['MFDLogFile']) + " --noiseSFTs=" + str(Vars['H1MFDInput']) + "/*.sft --window=None\""
 					
 					MFDCmdL1 = 'VARS ' + jobName + '_L1 argList=" --outSFTbname=' + str(Vars['CFSInput']) + " --IFO=L1 --ephemDir=" + str(Vars['EphemPath']) + " --ephemYear=" + str(Vars['EphemYrs']) + " --fmin=" + str(Vars['MFDFmin']) + " --Band=" + str(Vars['MFDFBand']) + " --refTime=" + str(Vars['startTime']) + " --Alpha=" + str(Vars['Alpha']) + " --Delta=" + str(Vars['Delta']) + " --h0=" + str(Vars['h0Test']) + " --cosi=" + str(Vars['CosIota']) + " --psi=" + str(Vars['Psi']) + " --phi0=" + str(Vars['Phi0']) + " --Freq=" + str(FreqVars[0]) + " --f1dot=" + str(FreqVars[1]) + " --f2dot=" + str(FreqVars[2]) + " --logfile=" + str(Vars['MFDLogFile']) + " --noiseSFTs=" + str(Vars['L1MFDInput']) + "/*.sft --window=None\""
@@ -265,6 +264,8 @@ def main(argv):
 								Delta = Vars['Delta'] + 0.0001*step
 							elif d == 3:
 								Delta = Vars['Delta'] - 0.0001*step
+
+							jobName = directionlist[d] + "_" str(freq) + "_" + str(cosi) + "_" + str(step)
 
 							Vars['CFSOutput'] = outputLocation + "/"+ directionlist[d] + "_cosi_" + str(cosi) + "_freq_" + str(freq) + "_"+str(step)+".dat"
 				
