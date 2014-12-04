@@ -82,10 +82,8 @@ def main(argv):
 	with open(outputDir+"/"+outputFilename, 'w') as f:
 		f.write("#Configuration File for GammaSearch\n")
 		f.write("[InjVars]\n")
-		f.write("#H1 Input Data\n")
-		f.write("H1InputData=/home/jaclyn.sanders/SFTs/H1/*.sft\n")
-		f.write("#L1 Input Data\n")
-		f.write("L1InputData=/home/jaclyn.sanders/SFTs/L1/*.sft\n")
+		f.write("#Input Data\n")
+		f.write("InputData=/home/jaclyn.sanders/BandingSFTs\n")
 		f.write("#Source Number\n")
  		f.write("Source="+str(sourceNumber)+"\n")
 		f.write("#Alpha (rad)\n")

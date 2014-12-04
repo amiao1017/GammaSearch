@@ -7,7 +7,7 @@ import sys, getopt, re, os, math, ConfigParser
 
 def main(argv):
 
-	usage = "GS_2F_to_UL -s <start frequency> -e <end frequency> -c <config file> -f <file location> [-o <output filename> -d <output directory>]"
+	usage = "GS_2F_to_UL -s <start frequency> -e <end frequency> -c <config file> -f <CFS output location> [-o <output filename> -d <output directory>]"
 
 	#load inputs/options
 
@@ -20,7 +20,7 @@ def main(argv):
 	loudest2F = []
 
 	try:
-		opts, args = getopt.getopt(argv, "hs:e:c:f:o:d:", ["help", "startFreq=", "endFreq=", "configFile=", "files=", "outFile=", "outputDir="])
+		opts, args = getopt.getopt(argv, "hs:e:f:c:o:d:", ["help", "startFreq=", "endFreq=", "files=" "configFile=", "outFile=", "outputDir="])
 	except getopt.GetoptError:
 		print usage
 		sys.exit(2)
@@ -66,6 +66,12 @@ def main(argv):
 		sys.exit(1)
 
 	try:
+		Vars['SFTlocation'] = int(config.get("InjVars","InputData"))
+	except:
+		sys.stderr.write("Cannot read SFTlocation\n")
+		sys.exit(1)
+
+	try:
 		Vars['EphemPath'] = config.get("InjVars","EphemPath")
 	except:
 		sys.stderr.write("Cannot read EphemPath\n")
@@ -98,12 +104,13 @@ def main(argv):
 
 				Fstatlist = [] 
 				freq = startFreq + step*band
+				freqDir = str(math.floor(freq/10))
 				i = 0
 				maxFstat = 0
 				maxFstatInd = 0
 
 				filename = fileLocation + "/GammaSearch_" + str(freq) + "_" + str(i) + ".dat"
-				filepattern = fileLocation + "/Data/GS_" + str(sourceNumber) + "_" + str(freq) + "/*.sft"
+				filepattern = SFTlocation + "/" + freqDir "/*_" + str(freq) + ".sft"
 				
 				while os.path.isfile(filename):						
 
@@ -130,6 +137,7 @@ def main(argv):
 							break							
 												
 					i = i + 1
+
 					filename = fileLocation + "/GammaSearch_" + str(freq) + "_" + str(i) + ".dat"			
 					
 	
@@ -139,11 +147,16 @@ def main(argv):
 
 					record.write(Fstatlist[maxFstatInd]['f0'] + " " + Fstatlist[maxFstatInd]['freq'] + " " + Fstatlist[maxFstatInd]['searchno'] + " " + Fstatlist[maxFstatInd]['ra'] + " " + Fstatlist[maxFstatInd]['dec'] + " " + Fstatlist[maxFstatInd]['Fstat'] + "\n")	
 
-					outputfilename = "UL_"+ str(sourceNumber) + "_" + str(freq) + "_band"
+					outputSubDir = outputDir + "/" + str(math.floor(freq/10))
+
+					if not(os.path.isdir(outputSubDir)):
+						os.makedirs(outputSubDir)
+
+					outputfilename = outputSubDir + "/UL_"+ str(sourceNumber) + "_" + str(freq) + "_band.txt"
 	
 					output.write("JOB " + outputfilename + " AnalyticUL.sub\n")
 					output.write("RETRY " + outputfilename + " 0\n")
-					output.write("VARS " + outputfilename + ' argList=" -a ' + Fstatlist[maxFstatInd]['ra'] + " -d " + Fstatlist[maxFstatInd]['dec'] + " -f " + Fstatlist[maxFstatInd]['f0'] + " -b " + str(band) + " -F " + Fstatlist[maxFstatInd]['Fstat'] + " -D " + filepattern + " -E " + Vars['EphemPath'] +" -y " + Vars['EphemYrs'] + " -o " + outputDir + "/" + outputfilename + '.txt"\n')
+					output.write("VARS " + outputfilename + ' argList=" -a ' + Fstatlist[maxFstatInd]['ra'] + " -d " + Fstatlist[maxFstatInd]['dec'] + " -f " + Fstatlist[maxFstatInd]['f0'] + " -b " + str(band) + " -F " + Fstatlist[maxFstatInd]['Fstat'] + " -D " + filepattern + " -E " + Vars['EphemPath'] +" -y " + Vars['EphemYrs'] + " -o " + outputfilename + '"\n')
 					output.write("\n")
 
 def FStatVeto(FStat, FStatH1, FStatL1):

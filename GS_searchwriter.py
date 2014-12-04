@@ -119,15 +119,9 @@ def main(argv):
 		sys.exit(1)
 
 	try:
-		Vars['H1SFTlocation'] = config.get("InjVars","H1InputData")
+		Vars['SFTlocation'] = config.get("InjVars","InputData")
 	except:
-		sys.stderr.write("Cannot read H1SFTlocation\n")
-		sys.exit(1)
-
-	try:
-		Vars['L1SFTlocation'] = config.get("InjVars","L1InputData")
-	except:
-		sys.stderr.write("Cannot read L1SFTlocation\n")
+		sys.stderr.write("Cannot read SFTlocation\n")
 		sys.exit(1)
 	
 	try:
@@ -197,7 +191,7 @@ def main(argv):
 		os.makedirs(outputDir)
 
 	outputLocation = outputDir+"/"+"GS_"+str(Vars['sourceNumber'])+"_"+str(startFreq)+"_"+str(endFreq)	
-	dataDir = outputLocation+"/Data"	
+	dataDir = Vars['SFTlocation']	
 
 	if not(os.path.isdir(outputLocation)):
 		os.makedirs(outputLocation)
@@ -207,22 +201,10 @@ def main(argv):
 	for x in xrange(0,freqSteps):
 				
 		freq = startFreq + x*band
+
+		dirNo = math.floor(freq/10.0)
 		
-		dataLocation = str(dataDir)+"/GS_"+str(Vars['sourceNumber'])+"_"+str(freq)
-
-		if not(os.path.isdir(dataLocation)):
-			os.makedirs(dataLocation)
-
-		minFreq = freq - band*2
-		maxFreq = freq + band*6
-
-		#produce data files for searching using ConverttoSFTv2
-
-		#call(["lalapps_ConvertToSFTv2", "--inputSFTs="+Vars['H1SFTlocation'], "--outputDir="+dataLocation, "--fmin="+str(minFreq), "--fmax="+str(maxFreq)])
-		#call(["lalapps_ConvertToSFTv2", "--inputSFTs="+Vars['L1SFTlocation'], "--outputDir="+dataLocation, "--fmin="+str(minFreq), "--fmax="+str(maxFreq)])
-
-		
-		#calculate spindown parameters
+		dataLocation = dataDir + "/" + str(dirNo)
 				
 		f1dot = -(freq+band)/Vars['Tau']
 		f1dotBand = (6*(freq+band)-Vars['lowestFreq'])/(6*Vars['Tau'])
@@ -242,7 +224,7 @@ def main(argv):
 		AlphaList.append(Vars['Alpha'])
 		DeltaList.append(Vars['Delta'])
 
-		while (count > 0):
+		if (count > 0):
 			count = 0
 			for x in range(0,j):
 				t = 2.0*math.pi/float(j)*float(x)
@@ -253,6 +235,7 @@ def main(argv):
 					AlphaList.append(alpha_temp)
 					DeltaList.append(delta_temp)
 					count = count + 1
+
 			j = 2*j
 
 		#write SUB file
@@ -275,7 +258,7 @@ def main(argv):
 				jobName = "GS_"+str(Vars['sourceNumber'])+"_"+str(freq)+"_"+str(x)
 				f.write("JOB "+ jobName + " " + subFileName + "\n")
 				f.write("RETRY " + jobName + " 0\n")
-				f.write("VARS " + jobName + ' argList=" --Alpha=' + str(AlphaList[x]) + ' --Delta=' + str(DeltaList[x]) + ' --Freq=' + str(freq) + ' --f1dot=' + str(f1dot) + ' --f2dot=' + str(f2dot) + ' --FreqBand=' + str(band) + ' --f1dotBand=' + str(f1dotBand) + ' --f2dotBand=' + str(f2dotBand) + ' --DataFiles=' + dataLocation + '/*.sft --TwoFthreshold=' + str(Vars['2FThresh']) + ' --NumCandidatesToKeep=100 --gridType=8 --outputFstat=' + outputLocation + '/GammaSearch_' + str(freq) + '_' + str(x) + '.dat --outputFstatHist=' + outputLocation + '/GammaHist_' + str(freq) + '_' + str(x) + '.dat --outputLoudest=' + outputLocation + '/GammaLoud_' + str(freq) + '_' + str(x) + '.dat --outputLogfile=' + outputLocation + '/CFSlog.txt --refTime=' + str(Vars['startTime']) + ' --minStartTime=' + str(Vars['startTime']) + ' --maxEndTime=' + str(Vars['endTime']) + ' --outputSingleFstats=TRUE --metricMismatch=' + str(Vars['m']) + ' --dFreq=1e-6 --useResamp=TRUE --ephemEarth='+ str(Vars['EphemEarth']) + ' --ephemSun='+str(Vars['EphemSun'])+'"\n')
+				f.write("VARS " + jobName + ' argList=" --Alpha=' + str(AlphaList[x]) + ' --Delta=' + str(DeltaList[x]) + ' --Freq=' + str(freq) + ' --f1dot=' + str(f1dot) + ' --f2dot=' + str(f2dot) + ' --FreqBand=' + str(band) + ' --f1dotBand=' + str(f1dotBand) + ' --f2dotBand=' + str(f2dotBand) + ' --DataFiles=' + dataLocation + '/*_'+ str(freq) + '.sft --TwoFthreshold=' + str(Vars['2FThresh']) + ' --NumCandidatesToKeep=100 --gridType=8 --outputFstat=' + outputLocation + '/GammaSearch_' + str(freq) + '_' + str(x) + '.dat --outputFstatHist=' + outputLocation + '/GammaHist_' + str(freq) + '_' + str(x) + '.dat --outputLoudest=' + outputLocation + '/GammaLoud_' + str(freq) + '_' + str(x) + '.dat --outputLogfile=' + outputLocation + '/CFSlog.txt --refTime=' + str(Vars['startTime']) + ' --minStartTime=' + str(Vars['startTime']) + ' --maxEndTime=' + str(Vars['endTime']) + ' --outputSingleFstats=TRUE --metricMismatch=' + str(Vars['m']) + ' --dFreq=1e-6 --useResamp=TRUE --ephemEarth='+ str(Vars['EphemEarth']) + ' --ephemSun='+str(Vars['EphemSun'])+'"\n')
 				f.write("\n")
 
 	

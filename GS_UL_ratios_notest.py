@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# GS_UL_ratios - collects results from upper limit validations and produces strain estimates.
+# GS_UL_ratios_notest - collects results from upper limit validations and produces strain estimates.
 
 from __future__ import division
 import sys, getopt, array, ConfigParser, math
@@ -8,7 +8,7 @@ import numpy as np
 
 def main(argv):
 
-	usage = "GS_UL_ratios -r <record file> -s <start frequency> [-d <input directory> -o <output file>]"
+	usage = "GS_UL_ratios_notest -r <record file> -s <start frequency> [-d <input directory> -o <output file>]"
 
 	inputDir = "."
 	
@@ -49,8 +49,14 @@ def main(argv):
 	frequency = []
 	strain = []
 	found = []
+	found100 = []
+	found150 = []
+	found200 = []
 	searched = []
 	ratio = []
+	ratio100 = []
+	ratio150 = []
+	ratio200 = []
 
 	for a in search_record:
 
@@ -62,7 +68,7 @@ def main(argv):
 		
 		filename = "CFS_Out_Freq_" + str(freq) + "_Test_" + str(int(search)) + ".dat"
 
-		location = inputDir + "/strain_" + str(h0) + "/CFS/" + filename
+		location = inputDir + "/strain_" + str(h0) + "/" + filename
 
 		with open(location, 'r') as input:
 			data = input.readlines()[20:-1]
@@ -89,23 +95,39 @@ def main(argv):
 			searched.append(1)
 			if twoF >= twoF0:
 				found.append(1)
+				found100.append(1)
+				found150.append(1)
+				found200.append(1)
 			else:
-				found.append(0)
+				found.append(0) 
+				found100.append(0)
+				found150.append(0)
+				found200.append(0)			
 		else:
 			searched[-1] = searched[-1] + 1
 			if twoF >= twoF0:
 				found[-1] = found[-1] + 1
+				if search < 100:
+					found100[-1] = found100[-1] + 1
+				if search < 150:
+					found150[-1] = found150[-1] + 1
+				if search < 200: 
+					found200[-1] = found200[-1] + 1 
+				
 
 	for b in range(0, len(found)-1):
 		ratio.append(found[b]/searched[b])
+		ratio100.append(found100[b]/100)
+		ratio150.append(found150[b]/150)
+		ratio200.append(found200[b]/200)
 
  	with open(outfile,'w') as f:
 
-                f.write("Frequency Strain Found Searched Ratio\n")
+                f.write("Frequency Strain Found Searched Ratio250 Ratio200 Ratio150 Ratio100\n")
 
                 for c in range(0,len(ratio)-1):
 
-                        f.write(str(frequency[c]) + " " + str(strain[c]) + " " + str(found[c]) + " " + str(searched[c]) + " " + str(ratio[c]) + "\n")
+                        f.write(str(frequency[c]) + " " + str(strain[c]) + " " + str(found[c]) + " " + str(searched[c]) + " " + str(ratio[c]) + " " + str(ratio200[c]) + " " + str(ratio150[c]) + " " + str(ratio100[c]) + "\n")
 		 
 def FStatVeto(FStat, FStatH1, FStatL1):
 	

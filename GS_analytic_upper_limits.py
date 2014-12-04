@@ -106,7 +106,7 @@ def main(argv):
 			else:
 				freq0 = input_record[step,0]
 
-			filename = "UL_" + str(sourceNumber)+ "_" str(freq0) + "_band.txt"
+			filename = str(math.floor(freq0/10)) + "/UL_" + str(sourceNumber)+ "_" str(freq0) + "_band.txt"
 
 			with open(fileLocation + "/" + filename, "r") as f:
 				data = f.readlines()[-3:-2]
