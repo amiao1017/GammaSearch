@@ -38,6 +38,12 @@ with open(dagFileName,"w") as f:
 		for y in xrange(0,100):
 
 			freqBand = tenHz + y*0.1
+
+			SFTDir = tenHzDir + "/" + str(freqBand)
+			
+			if not(os.path.isdir(SFTDir)):
+				os.makedirs(SFTDir)
+
 			minFreq = freqBand - 2*bandSize
 			maxFreq = freqBand + 6*bandSize
 		
@@ -49,12 +55,12 @@ with open(dagFileName,"w") as f:
 
 			f.write("JOB " + H1jobname + " " + subFileName + "\n")
 			f.write("RETRY " + H1jobname + " 0\n")
-			f.write("VARS " + H1jobname + ' argList=" --inputSFTs=' + H1SFTLocation + ' --outputSingleSFT=' + H1filename + ' --outputDir=' + tenHzDir + ' --fmin=' + str(minFreq) + ' --fmax=' + str(maxFreq) + '"\n')
+			f.write("VARS " + H1jobname + ' argList=" --inputSFTs=' + H1SFTLocation + ' --outputDir=' + SFTDir + ' --fmin=' + str(minFreq) + ' --fmax=' + str(maxFreq) + '"\n')
 			f.write("\n")
 
 			f.write("JOB " + L1jobname + " " + subFileName + "\n")
 			f.write("RETRY " + L1jobname + " 0\n")
-			f.write("VARS " + L1jobname + ' argList=" --inputSFTs=' + L1SFTLocation + ' --outputSingleSFT=' + L1filename + ' --outputDir=' + tenHzDir + ' --fmin=' + str(minFreq) + ' --fmax=' + str(maxFreq) + '"\n')
+			f.write("VARS " + L1jobname + ' argList=" --inputSFTs=' + L1SFTLocation + ' --outputDir=' + SFTDir + ' --fmin=' + str(minFreq) + ' --fmax=' + str(maxFreq) + '"\n')
 			f.write("\n")
 
 			

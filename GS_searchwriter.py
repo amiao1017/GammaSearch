@@ -202,9 +202,9 @@ def main(argv):
 				
 		freq = startFreq + x*band
 
-		dirNo = math.floor(freq/10.0)
+		dirNo = 10*math.floor(freq/10.0)
 		
-		dataLocation = dataDir + "/" + str(dirNo)
+		dataLocation = dataDir + "/" + str(dirNo) + "/" + str(freq)
 				
 		f1dot = -(freq+band)/Vars['Tau']
 		f1dotBand = (6*(freq+band)-Vars['lowestFreq'])/(6*Vars['Tau'])
@@ -258,7 +258,7 @@ def main(argv):
 				jobName = "GS_"+str(Vars['sourceNumber'])+"_"+str(freq)+"_"+str(x)
 				f.write("JOB "+ jobName + " " + subFileName + "\n")
 				f.write("RETRY " + jobName + " 0\n")
-				f.write("VARS " + jobName + ' argList=" --Alpha=' + str(AlphaList[x]) + ' --Delta=' + str(DeltaList[x]) + ' --Freq=' + str(freq) + ' --f1dot=' + str(f1dot) + ' --f2dot=' + str(f2dot) + ' --FreqBand=' + str(band) + ' --f1dotBand=' + str(f1dotBand) + ' --f2dotBand=' + str(f2dotBand) + ' --DataFiles=' + dataLocation + '/*_'+ str(freq) + '.sft --TwoFthreshold=' + str(Vars['2FThresh']) + ' --NumCandidatesToKeep=100 --gridType=8 --outputFstat=' + outputLocation + '/GammaSearch_' + str(freq) + '_' + str(x) + '.dat --outputFstatHist=' + outputLocation + '/GammaHist_' + str(freq) + '_' + str(x) + '.dat --outputLoudest=' + outputLocation + '/GammaLoud_' + str(freq) + '_' + str(x) + '.dat --outputLogfile=' + outputLocation + '/CFSlog.txt --refTime=' + str(Vars['startTime']) + ' --minStartTime=' + str(Vars['startTime']) + ' --maxEndTime=' + str(Vars['endTime']) + ' --outputSingleFstats=TRUE --metricMismatch=' + str(Vars['m']) + ' --dFreq=1e-6 --useResamp=TRUE --ephemEarth='+ str(Vars['EphemEarth']) + ' --ephemSun='+str(Vars['EphemSun'])+'"\n')
+				f.write("VARS " + jobName + ' argList=" --Alpha=' + str(AlphaList[x]) + ' --Delta=' + str(DeltaList[x]) + ' --Freq=' + str(freq) + ' --f1dot=' + str(f1dot) + ' --f2dot=' + str(f2dot) + ' --FreqBand=' + str(band) + ' --f1dotBand=' + str(f1dotBand) + ' --f2dotBand=' + str(f2dotBand) + ' --DataFiles=' + dataLocation + '/*.sft --TwoFthreshold=' + str(Vars['2FThresh']) + ' --NumCandidatesToKeep=100 --gridType=8 --outputFstat=' + outputLocation + '/GammaSearch_' + str(freq) + '_' + str(x) + '.dat --outputFstatHist=' + outputLocation + '/GammaHist_' + str(freq) + '_' + str(x) + '.dat --outputLoudest=' + outputLocation + '/GammaLoud_' + str(freq) + '_' + str(x) + '.dat --outputLogfile=' + outputLocation + '/CFSlog.txt --refTime=' + str(Vars['startTime']) + ' --minStartTime=' + str(Vars['startTime']) + ' --maxEndTime=' + str(Vars['endTime']) + ' --outputSingleFstats=TRUE --metricMismatch=' + str(Vars['m']) + ' --dFreq=1e-6 --useResamp=TRUE --ephemEarth='+ str(Vars['EphemEarth']) + ' --ephemSun='+str(Vars['EphemSun'])+'"\n')
 				f.write("\n")
 
 	

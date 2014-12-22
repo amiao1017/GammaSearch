@@ -71,15 +71,9 @@ def main(argv):
 		sys.exit(1)
 
 	try:
-		Vars['H1InputData'] = config.get("InjVars","H1InputData")
+		Vars['SFTlocation'] = config.get("InjVars","InputData")
 	except:
-		sys.stderr.write("Cannot read H1InputData\n")
-		sys.exit(1)
-
-	try:
-		Vars['L1InputData'] = config.get("InjVars","L1InputData")
-	except:
-		sys.stderr.write("Cannot read L1InputData\n")
+		sys.stderr.write("Cannot read SFTlocation\n")
 		sys.exit(1)
 
 	try:
@@ -145,13 +139,18 @@ def main(argv):
 	searchDag = "PUn_Ellipse_" + str(sourceNumber) + "_Searches.dag"
 
 	outputLocation = "PUn_Ellipse_"+str(sourceNumber)
-	MFDInputs = "MFD_Inputs"
-
+	
 	if not(os.path.isdir(outputLocation)):
 		os.makedirs(outputLocation)
-	if not(os.path.isdir(MFDInputs)):
-		os.makedirs(MFDInputs)
-	
+
+	MFDlocation = outputLocation + "/FakeData"
+	CFSlocation = outputLocation + "/CFS"
+
+	if not(os.path.isdir(MFDlocation)):
+		os.makedirs(MFDlocation)
+	if not (os.path.isdir(CFSlocation)):
+		os.makedirs(CFSlocation)
+		
 	MFDsubFile = "PUn_Ellipse_Injections.sub"
 	CFSsubFile = "PUn_Ellipse_Searches.sub"
 
@@ -183,25 +182,6 @@ def main(argv):
 		with open(searchDag,"w") as CFS:
 
 			for freq in freqlist:
-
-				dataLocation = MFDInputs + "/Data_" + str(Vars['sourceNumber']) + "_" + str(freq)
-			
-				if not(os.path.isdir(dataLocation)):
-					os.makedirs(dataLocation)
-
-				Vars['H1MFDInput'] = dataLocation + "/H1"
-				Vars['L1MFDInput'] = dataLocation + "/L1"
-		
-				Vars['BandFMin'] = freq - 0.5;
-				Vars['BandFMax'] = freq + 1.5;
-
-				BandingCmdH1 = "lalapps_ConvertToSFTv2 --inputSFTs=" + str(Vars['H1InputData']) + " --outputDir=" + str(Vars['H1MFDInput']) + " --fmin=" + str(Vars['BandFMin']) + " --fmax=" + str(Vars['BandFMax'])
-	
-				BandingCmdL1 = "lalapps_ConvertToSFTv2 --inputSFTs=" + str(Vars['L1InputData']) + " --outputDir=" + str(Vars['L1MFDInput']) + " --fmin=" + str(Vars['BandFMin']) + " --fmax=" + str(Vars['BandFMax'])
-
-				#subprocess.call(BandingCmdH1, shell=True)
-				#subprocess.call(BandingCmdL1, shell=True)
-	
 
 				#generate nuisance parameters
 				
@@ -238,13 +218,13 @@ def main(argv):
 		
 				Vars['Padding'] = 0.2
 
+				Vars['CFSInput'] = outputLocation + "/FakeData"
+
+				if not(os.path.isdir(Vars['CFSInput'])):
+					os.makedirs(Vars['CFSInput'])
+
 			
 				for cosi in cosilist:
-
-					Vars['CFSInput'] = outputLocation + "/freq_" + str(freq) + "_cosi_" + str(cosi) + "/Data"	
-
-					if not(os.path.isdir(Vars['CFSInput'])):
-						os.makedirs(Vars['CFSInput'])
 
 					#generates MFD and writes out to injection file
 					Vars['MFDFmin'] = SearchBox[0] - Vars['Padding']
@@ -254,11 +234,12 @@ def main(argv):
 					Vars['CosIota'] = cosi
 
 					jobName =  "PUn_" + str(freq) + "_" + str(cosi)
-
-										
-					MFDCmdH1 = 'VARS ' + jobName + '_H1 argList=" --outSFTbname=' + str(Vars['CFSInput']) + " --IFO=H1 --ephemDir=" + str(Vars['EphemPath']) + " --ephemYear=" + str(Vars['EphemYrs']) + " --fmin=" + str(Vars['MFDFmin']) + " --Band=" + str(Vars['MFDFBand']) + " --refTime=" + str(Vars['startTime']) + " --Alpha=" + str(Vars['Alpha']) + " --Delta=" + str(Vars['Delta']) + " --h0=" + str(Vars['h0Test']) + " --cosi=" + str(Vars['CosIota']) + " --psi=" + str(Vars['Psi']) + " --phi0=" + str(Vars['Phi0']) + " --Freq=" + str(FreqVars[0]) + " --f1dot=" + str(FreqVars[1]) + " --f2dot=" + str(FreqVars[2]) + " --logfile=" + str(Vars['MFDLogFile']) + " --noiseSFTs=" + str(Vars['H1MFDInput']) + "/*.sft --window=None\""
 					
-					MFDCmdL1 = 'VARS ' + jobName + '_L1 argList=" --outSFTbname=' + str(Vars['CFSInput']) + " --IFO=L1 --ephemDir=" + str(Vars['EphemPath']) + " --ephemYear=" + str(Vars['EphemYrs']) + " --fmin=" + str(Vars['MFDFmin']) + " --Band=" + str(Vars['MFDFBand']) + " --refTime=" + str(Vars['startTime']) + " --Alpha=" + str(Vars['Alpha']) + " --Delta=" + str(Vars['Delta']) + " --h0=" + str(Vars['h0Test']) + " --cosi=" + str(Vars['CosIota']) + " --psi=" + str(Vars['Psi']) + " --phi0=" + str(Vars['Phi0']) + " --Freq=" + str(FreqVars[0]) + " --f1dot=" + str(FreqVars[1]) + " --f2dot=" + str(FreqVars[2]) + " --logfile=" + str(Vars['MFDLogFile']) + " --noiseSFTs=" + str(Vars['L1MFDInput']) + "/*.sft --window=None\""
+					freqDir = str(math.floor(freq/10.0))
+										
+					MFDCmdH1 = 'VARS ' + jobName + '_H1 argList=" -s --outSFTbname=' + str(Vars['CFSInput']) + "/H1_" + str(freq) + ".sft --IFO=H1 --ephemDir=" + str(Vars['EphemPath']) + " --ephemYear=" + str(Vars['EphemYrs']) + " --fmin=" + str(Vars['MFDFmin']) + " --Band=" + str(Vars['MFDFBand']) + " --refTime=" + str(Vars['startTime']) + " --Alpha=" + str(Vars['Alpha']) + " --Delta=" + str(Vars['Delta']) + " --h0=" + str(Vars['h0Test']) + " --cosi=" + str(Vars['CosIota']) + " --psi=" + str(Vars['Psi']) + " --phi0=" + str(Vars['Phi0']) + " --Freq=" + str(FreqVars[0]) + " --f1dot=" + str(FreqVars[1]) + " --f2dot=" + str(FreqVars[2]) + " --logfile=" + str(Vars['MFDLogFile']) + " --noiseSFTs=" + str(Vars['SFTlocation']) + "/" + freqDir + "/H1_" + str(freq) + ".sft --window=None\""
+					
+					MFDCmdL1 = 'VARS ' + jobName + '_L1 argList=" -s --outSFTbname=' + str(Vars['CFSInput']) + "/L1_" + str(freq) + ".sft --IFO=L1 --ephemDir=" + str(Vars['EphemPath']) + " --ephemYear=" + str(Vars['EphemYrs']) + " --fmin=" + str(Vars['MFDFmin']) + " --Band=" + str(Vars['MFDFBand']) + " --refTime=" + str(Vars['startTime']) + " --Alpha=" + str(Vars['Alpha']) + " --Delta=" + str(Vars['Delta']) + " --h0=" + str(Vars['h0Test']) + " --cosi=" + str(Vars['CosIota']) + " --psi=" + str(Vars['Psi']) + " --phi0=" + str(Vars['Phi0']) + " --Freq=" + str(FreqVars[0]) + " --f1dot=" + str(FreqVars[1]) + " --f2dot=" + str(FreqVars[2]) + " --logfile=" + str(Vars['MFDLogFile']) + " --noiseSFTs=" + str(Vars['SFTlocation']) + "/" + freqDir + "/L1_" + str(freq) + ".sft  --window=None\""
 					
 					MFD.write('JOB ' + jobName +"_H1 " + MFDsubFile + '\n')
 					MFD.write('RETRY ' + jobName +"_H1 0\n")
@@ -268,6 +249,11 @@ def main(argv):
 					MFD.write('RETRY ' + jobName +"_L1 0\n")
 					MFD.write(MFDCmdL1+"\n\n")			
 
+					CFSoutputDir = CFSlocation + "/cosi_" + str(cosi) + "_freq_" + str(freq)
+		
+					if not(os.path.isdir(CFSoutputDir)):
+						os.makedirs(CFSoutputDir)
+
 					for step in xrange(0,1001):
 	
 						t = 2*math.pi*random.random()
@@ -275,10 +261,10 @@ def main(argv):
 						
 						Alpha = Vars['Alpha'] + r*(Vars['Semiminor']*math.cos(Vars['Semiangle'])*math.cos(t) - Vars['Semimajor']*math.sin(Vars['Semiangle'])*math.sin(t))
 						Delta = Vars['Delta'] + r*(Vars['Semiminor']*math.sin(Vars['Semiangle'])*math.cos(t) + Vars['Semimajor']*math.cos(Vars['Semiangle'])*math.sin(t))
-
+						
 						jobName =  "PUn_" + str(freq) + "_" + str(cosi) + "_" + str(step)
 
-						Vars['CFSOutput'] = outputLocation + "/PUn_cosi_" + str(cosi) + "_freq_" + str(freq) + "_"+str(step)+".dat"
+						Vars['CFSOutput'] = CFSoutputDir + "/PUn_cosi_" + str(cosi) + "_freq_" + str(freq) + "_"+str(step)+".dat"
 				
 						CFS.write('JOB ' + jobName + ' ' + CFSsubFile + '\n')
 						CFS.write('RETRY ' + jobName + ' 0\n')

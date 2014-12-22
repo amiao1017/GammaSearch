@@ -156,7 +156,7 @@ def main(argv):
 
 	with open(CFSsubFileName,"w") as f:
 		f.write("universe=vanilla\n")
-		f.write("executable = /usr/bin/lalapps_ComputeFStatistic_v2\n")
+		f.write("executable = /home/sano/master/opt/lscsoft/lalapps/bin/lalapps_ComputeFStatistic_v2\n")
 		f.write("arguments = $(argList)\n")
 		f.write("log = "+outputLocation+"/GS_log.txt\n")
 		f.write("error = " + outputLocation+"/GS_error.txt\n")
@@ -264,19 +264,19 @@ def main(argv):
 	
 							freqDir = str(10*math.floor(Vars['FMin']/10.0))
 						
-						
 							MFDdir = MFDlocation + "/" + str(strainfactor) + "/" + str(Freq0) + "/" + str(i)
 
 							if not(os.path.isdir(MFDdir)):
 								os.makedirs(MFDdir)
 
-							MFDCmdH1 = 'VARS ' + jobName + '_H1 argList=" --outSFTbname=' + MFDdir + " --IFO=H1 --ephemEarth=" + str(Vars['EphemEarth']) + ' --ephemSun='+str(Vars['EphemSun']) + " --fmin=" + str(Vars['MFDFmin']) + " --Band=" + str(Vars['MFDFBand']) + " --refTime=" + str(Vars['startTime']) + " --Alpha=" + str(Vars['Alpha']) + " --Delta=" + str(Vars['Delta']) + " --h0=" + str(Vars['h0Test']) + " --cosi=" + str(Vars['CosIota']) + " --psi=" + str(Vars['Psi']) + " --phi0=" + str(Vars['Phi0']) + " --Freq=" + str(FreqVars[0]) + " --f1dot=" + str(FreqVars[1]) + " --f2dot=" + str(FreqVars[2]) + " --logfile=" + str(Vars['MFDLogFile']) + " --noiseSFTs=" + str(Vars['SFTlocation']) + "/" + freqDir + "/" + str(freq) + "/*.sft --window=None\""
-							MFDCmdL1 = 'VARS ' + jobName + '_L1 argList=" --outSFTbname=' + MFDdir + " --IFO=L1 --ephemEarth=" + str(Vars['EphemEarth']) + ' --ephemSun='+str(Vars['EphemSun']) + " --fmin=" + str(Vars['MFDFmin']) + " --Band=" + str(Vars['MFDFBand']) + " --refTime=" + str(Vars['startTime']) + " --Alpha=" + str(Vars['Alpha']) + " --Delta=" + str(Vars['Delta']) + " --h0=" + str(Vars['h0Test']) + " --cosi=" + str(Vars['CosIota']) + " --psi=" + str(Vars['Psi']) + " --phi0=" + str(Vars['Phi0']) + " --Freq=" + str(FreqVars[0]) + " --f1dot=" + str(FreqVars[1]) + " --f2dot=" + str(FreqVars[2]) + " --logfile=" + str(Vars['MFDLogFile']) + " --noiseSFTs=" + str(Vars['SFTlocation']) + "/" + freqDir + "/" + str(freq) + "/*.sft --window=None\""							
+
+							MFDCmdH1 = 'VARS ' + jobName + '_H1 argList=" --outSFTbname=' + MFDdir + " --IFO=H1 --ephemDir=" + str(Vars['EphemPath']) + ' --ephemYear='+str(Vars['EphemYrs']) + " --fmin=" + str(Vars['MFDFmin']) + " --Band=" + str(Vars['MFDFBand']) + " --refTime=" + str(Vars['startTime']) + " --Alpha=" + str(Vars['Alpha']) + " --Delta=" + str(Vars['Delta']) + " --h0=" + str(Vars['h0Test']) + " --cosi=" + str(Vars['CosIota']) + " --psi=" + str(Vars['Psi']) + " --phi0=" + str(Vars['Phi0']) + " --Freq=" + str(FreqVars[0]) + " --f1dot=" + str(FreqVars[1]) + " --f2dot=" + str(FreqVars[2]) + " --logfile=" + str(Vars['MFDLogFile']) + " --noiseSFTs=" + str(Vars['SFTlocation']) + "/" + freqDir + "/" + str(freq) + "/*.sft\""
+							MFDCmdL1 = 'VARS ' + jobName + '_L1 argList=" --outSFTbname=' + MFDdir + " --IFO=L1 --ephemDir=" + str(Vars['EphemPath']) + ' --ephemYear='+str(Vars['EphemYrs']) + " --fmin=" + str(Vars['MFDFmin']) + " --Band=" + str(Vars['MFDFBand']) + " --refTime=" + str(Vars['startTime']) + " --Alpha=" + str(Vars['Alpha']) + " --Delta=" + str(Vars['Delta']) + " --h0=" + str(Vars['h0Test']) + " --cosi=" + str(Vars['CosIota']) + " --psi=" + str(Vars['Psi']) + " --phi0=" + str(Vars['Phi0']) + " --Freq=" + str(FreqVars[0]) + " --f1dot=" + str(FreqVars[1]) + " --f2dot=" + str(FreqVars[2]) + " --logfile=" + str(Vars['MFDLogFile']) + " --noiseSFTs=" + str(Vars['SFTlocation']) + "/" + freqDir + "/" + str(freq) + "/*.sft\""							
 							MFDsubFileName = MFDsubFileLocation + "/GS_" + str(sourceNumber) + "_" + str(freq) + "_strain_" + str(strainfactor) + "_" + str(i)
 
 						   	with open(MFDsubFileName,"w") as f:
 								f.write("universe=vanilla\n")
-								f.write("executable = /usr/bin/lalapps_Makefakedata_v4\n")
+								f.write("executable = /home/sano/master/opt/lscsoft/lalapps/bin/lalapps_Makefakedata_v4\n")
 								f.write("arguments = $(argList)\n")
 								f.write("log = "+ Vars['MFDLogFile'] +"\n")
 								f.write("error = " + outputLocation+"/GS_MFD_error.txt\n")
@@ -292,7 +292,7 @@ def main(argv):
 							MFDdag.write('RETRY ' + jobName +"_L1 0\n")
 							MFDdag.write(MFDCmdL1+"\n\n")				
 								
-							Vars['CFSInput'] = MFDdir	
+							Vars['CFSInput'] = MFDdir + "/.sft"	
 
 							#generates CFS and writes out to CFS dag
 	
@@ -302,8 +302,8 @@ def main(argv):
 							if not(os.path.isdir(strain_output + "/Hist")):
 								os.makedirs(strain_output + "/Hist")
 
-							Vars['CFSOutput'] = strain_output + "/CFS/CFS_Out_Freq_" + str(Freq0) + "_Test_"+str(i)+".dat"
-							Vars['CFSHist'] = strain_output + "/Hist/CFS_Hist_Freq_"+ str(Freq0) + "_Test_" + str(i)+".dat"
+							Vars['CFSOutput'] = strain_output + "CFS/CFS_Out_Freq_" + str(Freq0) + "_Test_"+str(i)+".dat"
+							Vars['CFSHist'] = strain_output + "Hist/CFS_Hist_Freq_"+ str(Freq0) + "_Test_" + str(i)+".dat"
 							
 							CFS.write('JOB ' + jobName + ' ' + CFSsubFileName + '\n')
 							CFS.write('RETRY ' + jobName + ' 0\n')

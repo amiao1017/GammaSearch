@@ -68,7 +68,7 @@ def main(argv):
 		
 		filename = "CFS_Out_Freq_" + str(freq) + "_Test_" + str(int(search)) + ".dat"
 
-		location = inputDir + "/strain_" + str(h0) + "/" + filename
+		location = inputDir + "/strain_" + str(h0) + "/CFS/" + filename
 
 		with open(location, 'r') as input:
 			data = input.readlines()[20:-1]

@@ -66,7 +66,7 @@ def main(argv):
 		sys.exit(1)
 
 	try:
-		Vars['SFTlocation'] = int(config.get("InjVars","InputData"))
+		Vars['SFTlocation'] = config.get("InjVars","InputData")
 	except:
 		sys.stderr.write("Cannot read SFTlocation\n")
 		sys.exit(1)
@@ -104,13 +104,13 @@ def main(argv):
 
 				Fstatlist = [] 
 				freq = startFreq + step*band
-				freqDir = str(math.floor(freq/10))
+				freqDir = str(10*math.floor(freq/10))
 				i = 0
 				maxFstat = 0
 				maxFstatInd = 0
 
 				filename = fileLocation + "/GammaSearch_" + str(freq) + "_" + str(i) + ".dat"
-				filepattern = SFTlocation + "/" + freqDir "/*_" + str(freq) + ".sft"
+				filepattern = Vars['SFTlocation'] + "/" + freqDir + "/" + str(freq) + "/*.sft"
 				
 				while os.path.isfile(filename):						
 
@@ -147,7 +147,7 @@ def main(argv):
 
 					record.write(Fstatlist[maxFstatInd]['f0'] + " " + Fstatlist[maxFstatInd]['freq'] + " " + Fstatlist[maxFstatInd]['searchno'] + " " + Fstatlist[maxFstatInd]['ra'] + " " + Fstatlist[maxFstatInd]['dec'] + " " + Fstatlist[maxFstatInd]['Fstat'] + "\n")	
 
-					outputSubDir = outputDir + "/" + str(math.floor(freq/10))
+					outputSubDir = outputDir + "/" + str(10*math.floor(freq/10))
 
 					if not(os.path.isdir(outputSubDir)):
 						os.makedirs(outputSubDir)
@@ -168,7 +168,7 @@ def FStatVeto(FStat, FStatH1, FStatL1):
 	#vetoing function: consistency check for UL searches.
 	#vetos if joint is lower than max of single IFOs or if either single IFO is less than 15
 
-	if (FStat > FStatH1) and (FStat > FStatL1) and (FStatL1 > 15) and (FStatH1 > 15):
+	if (FStat > FStatH1) and (FStat > FStatL1) and (FStatL1 > 10) and (FStatH1 > 10):
 		return 1
 	else:
 		return 0
